@@ -1,0 +1,38 @@
+------------------- LOWER MEMORY -------------------
+| 0x00000000 - 0x000003FF [RAM]: Real mode Interrupt Vector Table
+| 0x00000400 - 0x000004FF [RAM]: BIOS Data Area
+|--------- BDA ---------
+|     0x0400 [8  byte]: IO ports for COM1-COM4 serial (address is 2 bytes and zeros if none)
+|     0x0408 [6  byte]: IO ports of LPT1-LPT3 parallel (address i 2 bytes and zeros if none)
+|     0x040E [2  byte]: EBDA address >> 4 (NOT ALWAYS!!!)
+|     0x0410 [2  byte]: Bit flags for detected hardware
+|     0x0417 [2  byte]: Keyboard state flags
+|     0x041E [32 byte]: Keyboard buffer
+|     0x0449 [1  byte]: Display mode
+|     0x044A [2  byte]: Number of columns in text mode
+|     0x0463 [2  byte]: Base IO port for video
+|     0x046C [2  byte]: Number of IRQ0 ticks since boot
+|     0x0475 [1  byte]: Number of HDD detected
+|     0x0480 [2  byte]: Keyboard buffer start
+|     0x0482 [2  byte]: Keyboard buffer end
+|     0x0497 [1  byte]: Last keyboard LED/Shift key state
+|-----------------------
+| 0x00000500 - 0x00007BFF [RAM]: Free
+| 0x00007C00 - 0x00007DFF [RAM]: Bootsector
+| 0x00007E00 - 0x0007FFFF [RAM]: Free
+| 0x00080000 - 0x0009FFFF [RAM]: Extended BIOS Data Area
+| 0x000A0000 - 0x???????? [VRAM]: Graphic video memory
+| 0x000B8000 - 0x000BFCFF [VRAM]: Text video memory for colour monitors
+| 0x000BFD00 - 0x000BFFFF [VRAM]: VGA memory
+| 0x000C0000 - 0x000C7FFF [ROM]: Video BIOS
+| 0x000C8000 - 0x000EFFFF [ROM]: Mapped hardware and other
+| 0x000F0000 - 0x000FFFFF [ROM]: Motherboard BIOS
+------------------- UPPER MEMORY -------------------
+| 0x00100000 - 0x00EFFFFF [RAM]: Free if present
+| 0x00F00000 - 0x00FFFFFF [OUT]: ISA Memory Hole (If less memory than 4GB -> ???)
+| 0x01000000 - 0xBFFFFFFF [RAM]: Free if present
+| 0xC0000000 - 0xFFFFFFFF [OUT]: PCI devicec, PnP NVRAM?, IO APIC's, local APIC's, BIOS, ... (depends on motherboards and devices)
+----------------- x64 MEMORY > 4GB -----------------
+| 0x0000000100000000 - 0xFFFFFFFFFFFFFFFF [RAM]: Free if present
+| 0x???????????????? - 0x???????????????? [OUT]: Possibly memory mapped hardware but typically not)
+----------------------------------------------------
