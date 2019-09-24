@@ -1,3 +1,5 @@
+[BITS 32]
+
 SECTION .init
 GLOBAL _init:FUNCTION
 ; GCC initialization function

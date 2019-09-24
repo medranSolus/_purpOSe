@@ -14,18 +14,26 @@ DD CHECKSUM
 
 SECTION .text
 EXTERN _init
+EXTERN _initMemory
+EXTERN _initIDT
+EXTERN disableProcessor
+EXTERN print
 EXTERN kernel
 GLOBAL _start:FUNCTION (_start.end - _start)
 
 _start:
+    cli
     mov esp, stack_top
     call _init
+    call _initMemory
+    call _initIDT
+    sti
     call kernel
-    cli
-    .hang:
-        hlt
-        jmp .hang
+    call disableProcessor
 .end:
+
+SECTION .data
+KEND: DB 0xA, "No i koniec", 0xA, 0x0
 
 SECTION .bss
 ALIGN 16

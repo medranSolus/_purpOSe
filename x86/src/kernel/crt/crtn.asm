@@ -1,3 +1,5 @@
+[BITS 32]
+
 SECTION .init
     ; GCC insert crtend.o .init section here
     pop ebp
