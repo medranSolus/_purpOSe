@@ -1,9 +1,12 @@
+[BITS 32]
+
 SECTION .text
 EXTERN printChar
 GLOBAL print:FUNCTION (print.end - print)
 ; Display string that ends with NULL character
-; IN: address of string to display [32b]
+; IN: Address of string to display [32b]
 ; OUT: Void
+; USES: EAX
 print:
     pushfd
     push esi

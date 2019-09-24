@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2019
  * 
  */
-#ifndef _PORTIO_H
-#define _PORTIO_H
+#ifndef __PORTIO_H__
+#define __PORTIO_H__
 #include <stdint.h>
 
 /**
@@ -56,4 +56,4 @@ extern uint16_t read16(uint16_t port);
  */
 extern uint32_t read32(uint16_t port);
 
-#endif
+#endif // __PORTIO_H__

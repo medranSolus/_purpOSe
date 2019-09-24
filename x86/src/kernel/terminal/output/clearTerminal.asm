@@ -1,3 +1,5 @@
+[BITS 32]
+
 SECTION .data
 EXTERN outputBuffer, currentColor
 
@@ -7,6 +9,7 @@ GLOBAL clearTerminal:FUNCTION (clearTerminal.end - clearTerminal)
 ; Clears screen and move cursor at beginig position
 ; IN: Void
 ; OUT: Void
+; USES: EAX, CL
 clearTerminal:
     pushfd
     push edi

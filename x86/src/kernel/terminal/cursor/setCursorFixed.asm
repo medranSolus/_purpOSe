@@ -1,8 +1,11 @@
+[BITS 32]
+
 SECTION .text
 GLOBAL setCursorFixed:FUNCTION (setCursorFixed.end - setCursorFixed)
 ; Sets cursor at the specified position from begining of the screen
-; IN: position from begining [32b]
+; IN: Position from begining [16b]
 ; OUT: Void
+; USES: AX, DX
 setCursorFixed:
 	pushfd
 	mov al, 0x0f

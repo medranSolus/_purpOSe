@@ -1,7 +1,9 @@
+[BITS 32]
+
 SECTION .text
 GLOBAL getVgaColor:FUNCTION (getVgaColor.end - getVgaColor)
 ; Combines sign and background colors into VGA specific color
-; IN: sign color [TerminalColor], background color [TerminalColor]
+; IN: Sign color [TerminalColor], Background color [TerminalColor]
 ; OUT: VGA color [8b]
 getVgaColor:
     pushfd

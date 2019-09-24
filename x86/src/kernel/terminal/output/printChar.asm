@@ -1,3 +1,5 @@
+[BITS 32]
+
 SECTION .data
 EXTERN outputBuffer, currentColor
 
@@ -5,8 +7,9 @@ SECTION .text
 EXTERN setCursorFixed, getCursorPosition
 GLOBAL printChar:FUNCTION (printChar.end - printChar)
 ; Display single character on screen and move cursor
-; IN: character to display [8b]
+; IN: Character to display [8b]
 ; OUT: Void
+; USES: EAX, ECX, EDX
 printChar:
     pushfd
     call getCursorPosition
@@ -16,30 +19,30 @@ printChar:
     je short .newLine
     cmp cl, 8
     je short .backspace
-    mov edx, 0xb8000
-    shl eax, 1
+    mov edx, [outputBuffer]
+    shl ax, 1
     mov [eax + edx], cl
     mov cl, [currentColor]
     mov [eax + edx + 1], cl
-    shr eax, 1
-    inc eax
+    shr ax, 1
+    inc ax
     jmp short .quit
     .backspace:
-        dec eax
-        shl eax, 1
+        dec ax
+        shl ax, 1
         mov [eax + edx], BYTE ' '
         mov cl, [currentColor]
         mov [eax + edx + 1], cl
-        shr eax, 1
+        shr ax, 1
         jmp short .quit
     .newLine:
-        mov ecx, eax
+        mov cx, ax
         mov dl, 80
         div dl
-        movzx eax, ah
-        sub ecx, eax
-        mov eax, ecx
-        add eax, 80
+        movzx ax, ah
+        sub cx, ax
+        mov ax, cx
+        add ax, 80
     .quit:
     push eax
     call setCursorFixed

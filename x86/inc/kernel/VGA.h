@@ -1,5 +1,5 @@
-#ifndef _VGA_H
-#define _VGA_H
+#ifndef __VGA_H__
+#define __VGA_H__
 #include <stddef.h>
 
 #define VGA_WIDTH 80
@@ -32,4 +32,4 @@ enum TerminalColor
 	TColor_White = 15,
 };
 
-#endif
+#endif // __VGA_H__
