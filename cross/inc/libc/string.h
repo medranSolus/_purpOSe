@@ -8,9 +8,10 @@
  * @copyright Copyright (c) 2019
  * 
  */
-#ifndef _STRING_H
-#define _STRING_H
+#ifndef __STRING_H__
+#define __STRING_H__
 #include <stddef.h>
+#include <stdint.h>
 
 #if defined(__cplusplus)
 extern "C" {
@@ -19,8 +20,8 @@ extern "C" {
 /**
  * @brief           Get length of a string without null char.
  * 
- * @param str       Pointer to null-terminated C string.
- * @return size_t   Length of a null-terminated string.
+ * @param str:      Pointer to null-terminated C string.
+ * @return size_t:  Length of a null-terminated string.
  */
 extern size_t strlen(const char* str);
 
@@ -28,4 +29,4 @@ extern size_t strlen(const char* str);
 } /* extern "C" */
 #endif
 
-#endif
+#endif // __STRING_H__

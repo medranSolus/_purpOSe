@@ -8,8 +8,8 @@
  * @copyright Copyright (c) 2019
  * 
  */
-#ifndef _STDIO_H
-#define _STDIO_H
+#ifndef __STDIO_H__
+#define __STDIO_H__
 
 #if defined(__cplusplus)
 extern "C" {
@@ -18,9 +18,9 @@ extern "C" {
 /**
  * @brief           Print formatted data to stdout.
  * 
- * @param format    Formating C string to be written to stdout.
- * @param ...       Additional params to be inserted into formating string.
- * @return int      Number of char written or -1 on error (sets ferror).
+ * @param format:   Formating C string to be written to stdout.
+ * @param ...:      Additional params to be inserted into formating string.
+ * @return int:     Number of char written or -1 on error (sets ferror).
  */
 extern int printf(const char * format, ...);
 
@@ -28,4 +28,4 @@ extern int printf(const char * format, ...);
 } /* extern "C" */
 #endif
 
-#endif
+#endif // __STDIO_H__
