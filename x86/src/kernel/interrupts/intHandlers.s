@@ -1,0 +1,26 @@
+%ifndef _INT_HANDLERS_S 
+%define _INT_HANDLERS_S 
+
+EXTERN _0_divideError
+EXTERN _1_debugException
+EXTERN _2_nmi
+EXTERN _3_breakpoint
+EXTERN _4_overflow
+EXTERN _5_boundRange
+EXTERN _6_invalidOpcode
+EXTERN _7_noFPU
+EXTERN _8_doubleFault
+EXTERN _9_coprocSegmentOverrun
+EXTERN _10_invalidTSS
+EXTERN _11_segmentNotPresent
+EXTERN _12_stackFault
+EXTERN _13_generalProtection
+EXTERN _14_pageFault
+EXTERN _16_fpuError
+EXTERN _17_aligmentCheck
+EXTERN _18_machineCheck
+EXTERN _19_simdException
+EXTERN _20_virtualizationException
+
+
+%endif

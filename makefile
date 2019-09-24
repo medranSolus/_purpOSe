@@ -2,7 +2,7 @@
 
 KER_VER := 0.0.1_a
 BOOT_VER := 0.0.1_a
-TARGET := i686-elf
+TARGET := i386-elf
 
 ############################################ TOOLS ############################################
 
@@ -15,24 +15,36 @@ LD =
 
 ###################### Architecture dependend rools ######################
 
-LD_X86 := @../Tools/bin/$(TARGET)-ld
+LD_X86 := @./x86/tools/bin/$(TARGET)-ld
 ASM_X86 := @nasm
-CC_X86 := ../Tools/bin/$(TARGET)-gcc
+CC_X86 := ./x86/tools/bin/$(TARGET)-gcc
 
 ############################################ FLAGS ############################################
 
 ###################### Main flags ######################
 
 SYSROOT = ./$(ARCH)/bin/
+C_OS_DEFINES := -D_purpose -D_purpOSe -D_PURPOSE -D__purpose__ -D__purpOSe__ -D__PURPOSE__ 
+ASM_OS_DEFINES := -d_purpose -d_purpOSe -d_PURPOSE -d__purpose__ -d__purpOSe__ -d__PURPOSE__ 
 
 LD_FLAGS = -T ./$(ARCH)/kernelScript.ld
-ASM_FLAGS =
-C_FLAGS = -I $(ARCH_INC_DIR) $(C_CROSS_FLAGS)
+ASM_FLAGS = -i $(ARCH_INC_DIR) $(ASM_OS_DEFINES)
+C_FLAGS = -I $(ARCH_INC_DIR) $(C_CROSS_FLAGS) $(C_OS_DEFINES)
 BOOT_FLAGS =
+
+KER_INC = -I $(KER_ARCH_INC_DIR) $(KER_CROSS_INC) $(LIBK_INC)
+LIBK_INC = -I $(LIBK_ARCH_INC_DIR) $(LIBC_INC) $(LIBK_CROSS_INC)
+LIBC_INC = -I $(LIBC_ARCH_INC_DIR) $(LIBC_CROSS_INC)
+ACPICA_INC = $(ACPICA_CROSS_INC)
 
 ###################### Cross platform flags ######################
 
-C_CROSS_FLAGS ?= -fstack-protector -ffreestanding -c -std=gnu99 -O2 -Wall -Wextra -I $(CROSS_INC_DIR)
+C_CROSS_FLAGS ?= -ffreestanding -c -std=gnu99 -O2 -Wall -Wextra -I $(CROSS_INC_DIR) #-fstack-protector 
+
+KER_CROSS_INC = -I $(KER_CROSS_INC_DIR) $(LIBK_CROSS_INC)
+LIBK_CROSS_INC = -I $(LIBK_CROSS_INC_DIR) $(LIBC_CROSS_INC)
+LIBC_CROSS_INC = -I $(LIBC_CROSS_INC_DIR)
+ACPICA_CROSS_INC = -I $(ACPICA_CROSS_INC_DIR) -I $(ACPICA_ARCH_INC_DIR)
 
 ###################### Architecture flags ######################
 
@@ -41,18 +53,15 @@ ARCH = nan
 ######### x86 #########
 
 LD_X86_FLAGS := 
-ASM_X86_FLAGS := -f elf32
-C_X86_FLAGS := -m32
+ASM_X86_FLAGS := -f elf32 -g
+C_X86_FLAGS := -g -m32
 BOOT_X86_FLAGS := -f bin
 
 ############################################ VARIABLES ############################################
 
 ###################### Main variables ###################### 
 
-KER_OBJ = $(CRT_0_OBJ) $(CRT_I_OBJ) $(shell $(CC) -print-file-name=crtbegin.o) $(KER_CROSS_OBJ) $(KER_ARCH_OBJ) $(LIBK_OBJ) $(LIBC_OBJ) $(TER_OBJ) $(shell $(CC) -print-file-name=crtend.o) $(CRT_N_OBJ)
-LIBK_OBJ = $(LIBK_CROSS_OBJ) $(LIBK_ARCH_OBJ)
-LIBC_OBJ = $(LIBC_CROSS_OBJ) $(LIBC_ARCH_OBJ)
-TER_OBJ = $(TER_CROSS_OBJ) $(TER_ARCH_OBJ)
+OS_OBJ = $(CRT_0_OBJ) $(CRT_I_OBJ) $(shell $(CC) -print-file-name=crtbegin.o) $(KER_OBJ) $(LIBK_OBJ) $(LIBC_OBJ) $(ACPICA_OBJ) $(shell $(CC) -print-file-name=crtend.o) $(CRT_N_OBJ)
 
 CRT_OBJ = $(CRT_0_OBJ) $(CRT_I_OBJ) $(CRT_N_OBJ)
 CRT_0_OBJ = ./$(ARCH)/obj/kernel/crt0.obj
@@ -65,22 +74,12 @@ CROSS_INC_DIR := ./cross/inc/
 KER_CROSS_INC_DIR := ./cross/inc/kernel/
 LIBK_CROSS_INC_DIR := ./cross/inc/libk/
 LIBC_CROSS_INC_DIR := ./cross/inc/libc/
-TER_CROSS_INC_DIR := ./cross/inc/terminal/
+ACPICA_CROSS_INC_DIR := ./cross/inc/acpica/
 
 KER_CROSS_SRC_DIR := ./cross/src/kernel/
 LIBK_CROSS_SRC_DIR := ./cross/src/libk/
 LIBC_CROSS_SRC_DIR := ./cross/src/libc/
-TER_CROSS_SRC_DIR := ./cross/src/terminal/
-
-KER_CROSS_OBJ_DIR := ./cross/obj/kernel/
-LIBK_CROSS_OBJ_DIR := ./cross/obj/libk/
-LIBC_CROSS_OBJ_DIR := ./cross/obj/libc/
-TER_CROSS_OBJ_DIR := ./cross/obj/terminal/
-
-KER_CROSS_OBJ := $(patsubst %.c, $(KER_CROSS_OBJ_DIR)%.obj, $(shell find $(KER_CROSS_SRC_DIR) -type f -name "*.c" -exec basename {} \;))
-LIBK_CROSS_OBJ := $(patsubst %.c, $(LIBK_CROSS_OBJ_DIR)%.obj, $(shell find $(LIBK_CROSS_SRC_DIR) -type f -name "*.c" -exec basename {} \;))
-LIBC_CROSS_OBJ := $(patsubst %.c, $(LIBC_CROSS_OBJ_DIR)%.obj, $(shell find $(LIBC_CROSS_SRC_DIR) -type f -name "*.c" -exec basename {} \;))
-TER_CROSS_OBJ := $(patsubst %.c, $(TER_CROSS_OBJ_DIR)%.obj, $(shell find $(TER_CROSS_SRC_DIR) -type f -name "*.c" -exec basename {} \;))
+ACPICA_CROSS_SRC_DIR := ./cross/src/acpica/
 
 ###################### Architecture dependend variables ######################
 
@@ -88,24 +87,26 @@ ARCH_INC_DIR = ./$(ARCH)/inc/
 KER_ARCH_INC_DIR = ./$(ARCH)/inc/kernel/
 LIBK_ARCH_INC_DIR = ./$(ARCH)/inc/libk/
 LIBC_ARCH_INC_DIR = ./$(ARCH)/inc/libc/
-TER_ARCH_INC_DIR = ./$(ARCH)/inc/terminal/
+ACPICA_ARCH_INC_DIR = ./$(ARCH)/inc/acpica/
 
 BOOT_SRC_DIR = ./$(ARCH)/src/bootloader/
 KER_ARCH_SRC_DIR = ./$(ARCH)/src/kernel/
 LIBK_ARCH_SRC_DIR = ./$(ARCH)/src/libk/
 LIBC_ARCH_SRC_DIR = ./$(ARCH)/src/libc/
-TER_ARCH_SRC_DIR = ./$(ARCH)/src/terminal/
+ACPICA_ARCH_SRC_DIR = ./$(ARCH)/src/acpica/
 
-KER_ARCH_OBJ_DIR = ./$(ARCH)/obj/kernel/
-LIBK_ARCH_OBJ_DIR = ./$(ARCH)/obj/libk/
-LIBC_ARCH_OBJ_DIR = ./$(ARCH)/obj/libc/
-TER_ARCH_OBJ_DIR = ./$(ARCH)/obj/terminal/
+BOOT_OBJ_DIR = ./$(ARCH)/obj/bootloader/
+KER_OBJ_DIR = ./$(ARCH)/obj/kernel/
+LIBK_OBJ_DIR = ./$(ARCH)/obj/libk/
+LIBC_OBJ_DIR = ./$(ARCH)/obj/libc/
+ACPICA_OBJ_DIR = ./$(ARCH)/obj/acpica/
 
 ifneq ($(ARCH), nan)
-KER_ARCH_OBJ = $(patsubst %.c, $(KER_ARCH_OBJ_DIR)%.obj, $(shell find $(KER_ARCH_SRC_DIR) -type f -name "*.c" -exec basename {} \;)) $(patsubst %.asm, $(KER_ARCH_OBJ_DIR)%.obj, $(shell find $(KER_ARCH_SRC_DIR) -path $(KER_ARCH_SRC_DIR)crt -prune -o -type f -name "*.asm" -exec basename {} \;))
-LIBK_ARCH_OBJ = $(patsubst %.c, $(LIBK_ARCH_OBJ_DIR)%.obj, $(shell find $(LIBK_ARCH_SRC_DIR) -type f -name "*.c" -exec basename {} \;)) $(patsubst %.asm, $(LIBK_ARCH_OBJ_DIR)%.obj, $(shell find $(LIBK_ARCH_SRC_DIR) -type f -name "*.asm" -exec basename {} \;))
-LIBC_ARCH_OBJ = $(patsubst %.c, $(LIBC_ARCH_OBJ_DIR)%.obj, $(shell find $(LIBC_ARCH_SRC_DIR) -type f -name "*.c" -exec basename {} \;)) $(patsubst %.asm, $(LIBC_ARCH_OBJ_DIR)%.obj, $(shell find $(LIBC_ARCH_SRC_DIR) -type f -name "*.asm" -exec basename {} \;))
-TER_ARCH_OBJ = $(patsubst %.c, $(TER_ARCH_OBJ_DIR)%.obj, $(shell find $(TER_ARCH_SRC_DIR) -type f -name "*.c" -exec basename {} \;)) $(patsubst %.asm, $(TER_ARCH_OBJ_DIR)%.obj, $(shell find $(TER_ARCH_SRC_DIR) -type f -name "*.asm" -exec basename {} \;))
+BOOT_OBJ = $(patsubst %.asm, $(BOOT_OBJ_DIR)%.bin, MBR.asm VBR.asm)
+KER_OBJ = $(patsubst %.c, $(KER_OBJ_DIR)%.obj, $(shell find $(KER_CROSS_SRC_DIR) -type f -name "*.c" -exec basename {} \;)) $(patsubst %.c, $(KER_OBJ_DIR)%.obj, $(shell find $(KER_ARCH_SRC_DIR) -type f -name "*.c" -exec basename {} \;)) $(patsubst %.asm, $(KER_OBJ_DIR)%.obj, $(shell find $(KER_ARCH_SRC_DIR) -path $(KER_ARCH_SRC_DIR)crt -prune -o -type f -name "*.asm" -exec basename {} \;))
+LIBK_OBJ = $(patsubst %.c, $(LIBK_OBJ_DIR)%.obj, $(shell find $(LIBK_CROSS_SRC_DIR) -type f -name "*.c" -exec basename {} \;)) $(patsubst %.c, $(LIBK_OBJ_DIR)%.obj, $(shell find $(LIBK_ARCH_SRC_DIR) -type f -name "*.c" -exec basename {} \;)) $(patsubst %.asm, $(LIBK_OBJ_DIR)%.obj, $(shell find $(LIBK_ARCH_SRC_DIR) -type f -name "*.asm" -exec basename {} \;))
+LIBC_OBJ = $(patsubst %.c, $(LIBC_OBJ_DIR)%.obj, $(shell find $(LIBC_CROSS_SRC_DIR) -type f -name "*.c" -exec basename {} \;)) $(patsubst %.c, $(LIBC_OBJ_DIR)%.obj, $(shell find $(LIBC_ARCH_SRC_DIR) -type f -name "*.c" -exec basename {} \;)) $(patsubst %.asm, $(LIBC_OBJ_DIR)%.obj, $(shell find $(LIBC_ARCH_SRC_DIR) -type f -name "*.asm" -exec basename {} \;))
+#ACPICA_OBJ = $(patsubst %.c, $(ACPICA_OBJ_DIR)%.obj, $(shell find $(ACPICA_CROSS_SRC_DIR) -type f -name "*.c" -exec basename {} \;)) $(patsubst %.c, $(ACPICA_OBJ_DIR)%.obj, $(shell find $(ACPICA_ARCH_SRC_DIR) -type f -name "*.c" -exec basename {} \;))
 endif
 
 ############################################ RULES ############################################
@@ -116,124 +117,183 @@ endif
 all: x86
 	$(MSG) "_purpOSe assembled"
 
-.PHONY: cross
-cross: $(LIBK_CROSS_OBJ) $(LIBC_CROSS_OBJ) $(TER_CROSS_OBJ_DIR) $(KER_CROSS_OBJ)
+.PHONY: kernel
+kernel: kernel_x86
+	$(MSG) "Kernel assembled"
+
+.PHONY: boot
+boot: boot_x86
+	$(MSG) "Bootloader assembled"
 
 .PHONY: clean
 clean:
-	@$(RM) -f $(KER_CROSS_OBJ_DIR)*.obj $(LIBK_CROSS_OBJ_DIR)*.obj $(LIBC_CROSS_OBJ_DIR)*.obj $(TER_CROSS_OBJ_DIR)*.obj
-	@$(RM) -f $(SYSROOT)kernel_$(KER_VER) $(SYSROOT)bootloader_$(BOOT_VER)
 	$(eval ARCH := x86)
-	@$(RM) -f $(KER_ARCH_OBJ_DIR)*.obj $(LIBK_ARCH_OBJ_DIR)*.obj $(LIBC_ARCH_OBJ_DIR)*.obj $(TER_ARCH_OBJ_DIR)*.obj 
+	@$(RM) -f $(SYSROOT)* $(KER_OBJ_DIR)*.obj $(LIBK_OBJ_DIR)*.obj $(LIBC_OBJ_DIR)*.obj $(ACPICA_OBJ_DIR)*.obj $(BOOT_OBJ_DIR)*.bin
 
 ###################### Architecture dependend rules ######################
 
+.PHONY: acpica_$(ARCH)
+acpica_$(ARCH): $(ACPICA_OBJ)
+
 .PHONY: libk_$(ARCH)
-libk_$(ARCH): $(LIBK_ARCH_OBJ)
+libk_$(ARCH): $(LIBK_OBJ)
 
 .PHONY: libc_$(ARCH)
-libc_$(ARCH): $(LIBC_ARCH_OBJ)
+libc_$(ARCH): $(LIBC_OBJ)
 
-.PHONY: $(SYSROOT)terminal
-$(SYSROOT)terminal: $(TER_ARCH_OBJ)
+$(SYSROOT)purpose.ker: $(KER_OBJ) $(CRT_OBJ)
+	$(LD) $(LD_FLAGS) $(OS_OBJ) -o $@
 
-$(SYSROOT)kernel_$(KER_VER): $(KER_ARCH_OBJ) $(CRT_OBJ)
-	$(LD) $(LD_FLAGS) $(KER_OBJ) -o $(SYSROOT)kernel_$(KER_VER)
-
-$(SYSROOT)bootloader_$(BOOT_VER):
-	$(ASM) $(BOOT_FLAGS) $(BOOT_SRC_DIR)MBR.asm -o $(SYSROOT)bootloader_$(BOOT_VER)
+$(SYSROOT)bootpos.bin: $(BOOT_OBJ)
+	@cat $(BOOT_OBJ) > $@
 
 ######### x86 #########
 
 .PHONY: x86
+x86: boot_x86 kernel_x86
+
+.PHONY: kernel_x86
 ifeq ($(ARCH), x86)
-x86: libk_$(ARCH) libc_$(ARCH) $(SYSROOT)terminal cross $(SYSROOT)kernel_$(KER_VER) $(SYSROOT)bootloader_$(BOOT_VER)
+kernel_x86: acpica_$(ARCH) libk_$(ARCH) libc_$(ARCH) $(SYSROOT)purpose.ker
 else
-x86:
+kernel_x86:
 	$(eval ARCH := x86)
-	@$(MAKE) x86 --no-print-directory ARCH=$(ARCH) LD="$(LD_X86)" CC="$(CC_X86)" ASM="$(ASM_X86)" LD_FLAGS="$(LD_FLAGS) $(LD_X86_FLAGS)" ASM_FLAGS="$(ASM_FLAGS) $(ASM_X86_FLAGS)" C_FLAGS="$(C_FLAGS) $(C_X86_FLAGS)" BOOT_FLAGS="$(BOOT_FLAGS) $(BOOT_X86_FLAGS)"
+	@$(MAKE) $@ --no-print-directory ARCH=$(ARCH) LD="$(LD_X86)" CC="$(CC_X86)" ASM="$(ASM_X86)" LD_FLAGS="$(LD_FLAGS) $(LD_X86_FLAGS)" ASM_FLAGS="$(ASM_FLAGS) $(ASM_X86_FLAGS)" C_FLAGS="$(C_FLAGS) $(C_X86_FLAGS)"
+endif
+
+.PHONY: boot_x86
+ifeq ($(ARCH), x86)
+boot_x86: $(SYSROOT)bootpos.bin
+else
+boot_x86:
+	$(eval ARCH := x86)
+	@$(MAKE) $@ --no-print-directory ARCH=$(ARCH) CC="$(CC_X86)" ASM="$(ASM_X86)" ASM_FLAGS="$(ASM_FLAGS) $(ASM_X86_FLAGS)" BOOT_FLAGS="$(BOOT_FLAGS) $(BOOT_X86_FLAGS)"
 endif
 
 ###################### Kernel pattern rules ######################
 
 ######### C #########
 
-$(KER_ARCH_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)%.c
-	@$(CC) $(C_FLAGS) -I $(KER_CROSS_INC_DIR) -I $(KER_ARCH_INC_DIR) $< -o $@
+$(KER_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)utils/%.c
+	@$(CC) $(C_FLAGS) $(KER_INC) $< -o $@
 
-$(KER_CROSS_OBJ_DIR)%.obj: $(KER_CROSS_SRC_DIR)%.c
-	@$(CC) $(C_FLAGS) -I $(KER_CROSS_INC_DIR) $< -o $@
+$(KER_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)terminal/%.c
+	@$(CC) $(C_FLAGS) $(KER_INC) $< -o $@
+
+$(KER_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)%.c
+	@$(CC) $(C_FLAGS) $(KER_INC) $< -o $@
+
+$(KER_OBJ_DIR)%.obj: $(KER_CROSS_SRC_DIR)%.c
+	@$(CC) $(C_FLAGS) $(KER_CROSS_INC) $< -o $@
 
 ######## ASM ########
 
-$(KER_ARCH_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)memoryManagment/segmentation/%.asm
-	$(ASM) $(ASM_FLAGS) $< -o $@
+$(KER_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)terminal/cursor/%.asm
+	$(ASM) $(ASM_FLAGS) -i $(KER_ARCH_INC_DIR) $< -o $@
 
-$(KER_ARCH_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)portIO/out/%.asm
-	$(ASM) $(ASM_FLAGS) $< -o $@
+$(KER_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)terminal/output/%.asm
+	$(ASM) $(ASM_FLAGS) -i $(KER_ARCH_INC_DIR) $< -o $@
 
-$(KER_ARCH_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)portIO/in/%.asm
-	$(ASM) $(ASM_FLAGS) $< -o $@
+$(KER_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)terminal/%.asm
+	$(ASM) $(ASM_FLAGS) -i $(KER_ARCH_INC_DIR) $< -o $@
 
-$(KER_ARCH_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)crt/%.asm
-	$(ASM) $(ASM_FLAGS) $< -o $@
+$(KER_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)interrupts/handlers/%.asm
+	$(ASM) $(ASM_FLAGS) -i $(KER_ARCH_INC_DIR) $< -o $@
 
-$(KER_ARCH_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)%.asm
-	$(ASM) $(ASM_FLAGS) $< -o $@
+$(KER_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)interrupts/%.asm
+	$(ASM) $(ASM_FLAGS) -i $(KER_ARCH_INC_DIR) $< -o $@
+
+$(KER_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)memoryManagment/%.asm
+	$(ASM) $(ASM_FLAGS) -i $(KER_ARCH_INC_DIR) $< -o $@
+
+$(KER_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)portIO/out/%.asm
+	$(ASM) $(ASM_FLAGS) -i $(KER_ARCH_INC_DIR) $< -o $@
+
+$(KER_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)portIO/in/%.asm
+	$(ASM) $(ASM_FLAGS) -i $(KER_ARCH_INC_DIR) $< -o $@
+
+$(KER_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)crt/%.asm
+	$(ASM) $(ASM_FLAGS) -i $(KER_ARCH_INC_DIR) $< -o $@
+
+$(KER_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)%.asm
+	$(ASM) $(ASM_FLAGS) -i $(KER_ARCH_INC_DIR) $< -o $@
 
 ###################### Libk pattern rules ######################
 
 ######### C #########
 
-$(LIBK_ARCH_OBJ_DIR)%.obj: $(LIBK_ARCH_SRC_DIR)%.c
-	@$(CC) $(C_FLAGS) -I $(LIBK_CROSS_INC_DIR) -I $(LIBK_ARCH_INC_DIR) $< -o $@
+$(LIBK_OBJ_DIR)%.obj: $(LIBK_ARCH_SRC_DIR)%.c
+	@$(CC) $(C_FLAGS) $(LIBK_INC) $< -o $@
 
-$(LIBK_CROSS_OBJ_DIR)%.obj: $(LIBK_CROSS_SRC_DIR)%.c
-	@$(CC) $(C_FLAGS) -I $(LIBK_CROSS_INC_DIR) $< -o $@
+$(LIBK_OBJ_DIR)%.obj: $(LIBK_CROSS_SRC_DIR)%.c
+	@$(CC) $(C_FLAGS) $(LIBK_CROSS_INC) $< -o $@
 
 ######## ASM ########
 
-$(LIBK_ARCH_OBJ_DIR)%.obj: $(LIBK_ARCH_SRC_DIR)%.asm
-	$(ASM) $(ASM_FLAGS) $< -o $@
+$(LIBK_OBJ_DIR)%.obj: $(LIBK_ARCH_SRC_DIR)%.asm
+	$(ASM) $(ASM_FLAGS) -i $(LIBK_ARCH_INC_DIR) $< -o $@
 
 ###################### Libc pattern rules ######################
 
 ######### C #########
 
-$(LIBC_ARCH_OBJ_DIR)%.obj: $(LIBC_ARCH_SRC_DIR)%.c
-	@$(CC) $(C_FLAGS) -I $(LIBC_CROSS_INC_DIR) -I $(LIBC_ARCH_INC_DIR) $< -o $@
+$(LIBC_OBJ_DIR)%.obj: $(LIBC_ARCH_SRC_DIR)%.c
+	@$(CC) $(C_FLAGS) $(LIBC_INC) $< -o $@
 
-$(LIBC_CROSS_OBJ_DIR)%.obj: $(LIBC_CROSS_SRC_DIR)stdio/%.c
-	@$(CC) $(C_FLAGS) -I $(LIBC_CROSS_INC_DIR) $< -o $@
+$(LIBC_OBJ_DIR)%.obj: $(LIBC_CROSS_SRC_DIR)stdio/%.c
+	@$(CC) $(C_FLAGS) $(LIBC_CROSS_INC) $< -o $@
 
-$(LIBC_CROSS_OBJ_DIR)%.obj: $(LIBC_CROSS_SRC_DIR)string/%.c
-	@$(CC) $(C_FLAGS) -I $(LIBC_CROSS_INC_DIR) $< -o $@
+$(LIBC_OBJ_DIR)%.obj: $(LIBC_CROSS_SRC_DIR)string/%.c
+	@$(CC) $(C_FLAGS) $(LIBC_CROSS_INC) $< -o $@
 
-$(LIBC_CROSS_OBJ_DIR)%.obj: $(LIBC_CROSS_SRC_DIR)%.c
-	@$(CC) $(C_FLAGS) -I $(LIBC_CROSS_INC_DIR) $< -o $@
+$(LIBC_OBJ_DIR)%.obj: $(LIBC_CROSS_SRC_DIR)%.c
+	@$(CC) $(C_FLAGS) $(LIBC_CROSS_INC) $< -o $@
 
 ######## ASM ########
 
-$(LIBC_ARCH_OBJ_DIR)%.obj: $(LIBC_ARCH_SRC_DIR)%.asm
-	$(ASM) $(ASM_FLAGS) $< -o $@
+$(LIBC_OBJ_DIR)%.obj: $(LIBC_ARCH_SRC_DIR)%.asm
+	$(ASM) $(ASM_FLAGS) -i $(LIBC_ARCH_INC_DIR) $< -o $@
 
-###################### Terminal pattern rules ######################
+###################### Bootloader pattern rules ######################
+
+######## ASM ########
+
+$(BOOT_OBJ_DIR)%.bin: $(BOOT_SRC_DIR)%.asm
+	$(ASM) $(BOOT_FLAGS) $< -o $@
+
+$(BOOT_OBJ_DIR)%.bin: $(BOOT_SRC_DIR)FAT16/%.asm
+	$(ASM) $(BOOT_FLAGS) $< -o $@
+
+###################### ACPICA pattern rules ######################
 
 ######### C #########
 
-$(TER_ARCH_OBJ_DIR)%.obj: $(TER_ARCH_SRC_DIR)%.c
-	@$(CC) $(C_FLAGS) -I $(TER_CROSS_INC_DIR) -I $(TER_ARCH_INC_DIR) $< -o $@
+$(ACPICA_OBJ_DIR)%.obj: $(ACPICA_ARCH_SRC_DIR)%.c
+	@$(CC) $(C_FLAGS) $(ACPICA_INC) $< -o $@
 
-$(TER_CROSS_OBJ_DIR)%.obj: $(TER_CROSS_SRC_DIR)%.c
-	@$(CC) $(C_FLAGS) -I $(TER_CROSS_INC_DIR) $< -o $@
+$(ACPICA_OBJ_DIR)%.obj: $(ACPICA_CROSS_SRC_DIR)dispatcher/%.c
+	@$(CC) $(C_FLAGS) $(ACPICA_CROSS_INC) $< -o $@
 
-######## ASM ########
+$(ACPICA_OBJ_DIR)%.obj: $(ACPICA_CROSS_SRC_DIR)events/%.c
+	@$(CC) $(C_FLAGS) $(ACPICA_CROSS_INC) $< -o $@
 
-$(TER_ARCH_OBJ_DIR)%.obj: $(TER_ARCH_SRC_DIR)cursor/%.asm
-	$(ASM) $(ASM_FLAGS) $< -o $@
+$(ACPICA_OBJ_DIR)%.obj: $(ACPICA_CROSS_SRC_DIR)executer/%.c
+	@$(CC) $(C_FLAGS) $(ACPICA_CROSS_INC) $< -o $@
 
-$(TER_ARCH_OBJ_DIR)%.obj: $(TER_ARCH_SRC_DIR)output/%.asm
-	$(ASM) $(ASM_FLAGS) $< -o $@
+$(ACPICA_OBJ_DIR)%.obj: $(ACPICA_CROSS_SRC_DIR)hardware/%.c
+	@$(CC) $(C_FLAGS) $(ACPICA_CROSS_INC) $< -o $@
 
-$(TER_ARCH_OBJ_DIR)%.obj: $(TER_ARCH_SRC_DIR)%.asm
-	$(ASM) $(ASM_FLAGS) $< -o $@
+$(ACPICA_OBJ_DIR)%.obj: $(ACPICA_CROSS_SRC_DIR)namespace/%.c
+	@$(CC) $(C_FLAGS) $(ACPICA_CROSS_INC) $< -o $@
+
+$(ACPICA_OBJ_DIR)%.obj: $(ACPICA_CROSS_SRC_DIR)parser/%.c
+	@$(CC) $(C_FLAGS) $(ACPICA_CROSS_INC) $< -o $@
+
+$(ACPICA_OBJ_DIR)%.obj: $(ACPICA_CROSS_SRC_DIR)resources/%.c
+	@$(CC) $(C_FLAGS) $(ACPICA_CROSS_INC) $< -o $@
+
+$(ACPICA_OBJ_DIR)%.obj: $(ACPICA_CROSS_SRC_DIR)tables/%.c
+	@$(CC) $(C_FLAGS) $(ACPICA_CROSS_INC) $< -o $@
+
+$(ACPICA_OBJ_DIR)%.obj: $(ACPICA_CROSS_SRC_DIR)utilities/%.c
+	@$(CC) $(C_FLAGS) $(ACPICA_CROSS_INC) $< -o $@

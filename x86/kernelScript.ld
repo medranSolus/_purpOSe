@@ -3,32 +3,24 @@ ENTRY(_start)
 SECTIONS
 {
     . = 0x100000;
-    .multiboot :
+    .text ALIGN (0x1000) :
     {
         *(.multiboot)
-    }
-    .init :
-    {
         *(.init)
-    }
-    .text :
-    { 
         *(.text)
-    }
-    .rodata :
-    { 
+        *(.fini)
         *(.rodata)
     }
-    .data :
-    { 
+    .data ALIGN (0x1000) :
+    {
+        *(.IDT)
+        *(.GDT)
+        *(.sysVars)
         *(.data)
     }
-    .bss :
-    { 
+    .bss ALIGN (0x1000) :
+    {
         *(.bss)
     }
-    .fini :
-    {
-        *(.fini)
-    }
+    __KERNEL_END = .;
 }
