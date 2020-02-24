@@ -14,9 +14,9 @@ DD CHECKSUM
 
 SECTION .text
 EXTERN _init
-EXTERN _initMemory
-EXTERN _initIDT
-EXTERN disableProcessor
+EXTERN _init_memory
+EXTERN _init_idt
+EXTERN _disable_processor
 EXTERN print
 EXTERN kernel
 GLOBAL _start:FUNCTION (_start.end - _start)
@@ -25,11 +25,11 @@ _start:
     cli
     mov esp, stack_top
     call _init
-    call _initMemory
-    call _initIDT
+    call _init_memory
+    call _init_idt
     sti
     call kernel
-    call disableProcessor
+    call _disable_processor
 .end:
 
 SECTION .data

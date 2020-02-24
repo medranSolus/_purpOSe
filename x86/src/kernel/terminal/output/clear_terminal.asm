@@ -1,23 +1,23 @@
 [BITS 32]
 
 SECTION .data
-EXTERN outputBuffer, currentColor
+EXTERN output_buffer, current_color
 
 SECTION .text
-EXTERN setCursorFixed
-GLOBAL clearTerminal:FUNCTION (clearTerminal.end - clearTerminal)
+EXTERN set_cursor_fixed
+GLOBAL clear_terminal:FUNCTION (clear_terminal.end - clear_terminal)
 ; Clears screen and move cursor at beginig position
 ; IN: Void
 ; OUT: Void
 ; USES: EAX, CL
-clearTerminal:
+clear_terminal:
     pushfd
     push edi
     push 0
-    call setCursorFixed
+    call set_cursor_fixed
     pop edi
-    mov eax, [outputBuffer]
-    mov cl, [currentColor]
+    mov eax, [output_buffer]
+    mov cl, [current_color]
     .loop:
         cmp edi, 2000
         jae short .quit

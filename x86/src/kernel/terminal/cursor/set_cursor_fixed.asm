@@ -1,12 +1,12 @@
 [BITS 32]
 
 SECTION .text
-GLOBAL setCursorFixed:FUNCTION (setCursorFixed.end - setCursorFixed)
+GLOBAL set_cursor_fixed:FUNCTION (set_cursor_fixed.end - set_cursor_fixed)
 ; Sets cursor at the specified position from begining of the screen
 ; IN: Position from begining [16b]
 ; OUT: Void
 ; USES: AX, DX
-setCursorFixed:
+set_cursor_fixed:
 	pushfd
 	mov al, 0x0f
 	mov dx, 0x3d4

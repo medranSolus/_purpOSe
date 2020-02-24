@@ -1,12 +1,12 @@
 [BITS 32]
 
 SECTION .text
-GLOBAL getCursorPosition:FUNCTION (getCursorPosition.end - getCursorPosition)
+GLOBAL get_cursor_position:FUNCTION (get_cursor_position.end - get_cursor_position)
 ; Get cursor position from begining of the screen
 ; IN: Void
 ; OUT: Cursor postion [16b]
 ; USES: CL, DX
-getCursorPosition:
+get_cursor_position:
     pushfd
     xor ax, ax
     mov dx, 0x3d4

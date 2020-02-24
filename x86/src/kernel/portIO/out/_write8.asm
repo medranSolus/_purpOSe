@@ -1,12 +1,12 @@
 [BITS 32]
 
 SECTION .text
-GLOBAL write8:FUNCTION (write8.end - write8)
+GLOBAL _write8:FUNCTION (_write8.end - _write8)
 ; Write 8 bit data to port
 ; IN: Port number [16b], Data to write [8b]
 ; OUT: Void
 ; USES: AL, DX
-write8:
+_write8:
     mov dx, [esp + 4]
     mov al, [esp + 8]
     out dx, al

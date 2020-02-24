@@ -1,8 +1,8 @@
-#include "VGA.h"
+#include "vga.h"
 #include "terminal.h"
 #include "output.h"
 
-static inline enum VideoType getBiosVideoType() { return (enum VideoType)(*((uint16_t*)0x410) & 0x30); }
+static inline VideoType get_bios_video_type() { return (VideoType)(*((uint16_t*)0x410) & 0x30); }
 
 extern int __KERNEL_END;
 
@@ -12,19 +12,19 @@ void kernel()
 	const char * prompt = "\nA:\\>";
 	const char * kend = "\nKernel end = ";
 	char * mode = NULL;
-	switch (getBiosVideoType())
+	switch (get_bios_video_type())
 	{
-		case VideoType_Monochrome:
+		case VideoType_monochrome:
 		{
 			mode = "in monochrome mode.";
 			break;
 		}
-		case VideoType_Colour:
+		case VideoType_color:
 		{
-			mode = "in colour mode.";
+			mode = "in color mode.";
 			break;
 		}
-		case VideoType_None:
+		case VideoType_none:
 		{
 			mode = "without screen.";
 			break;
@@ -35,11 +35,11 @@ void kernel()
 			break;
 		}
 	}
-	initTerminal();
+	init_terminal();
 	print(welcome);
 	print(mode);
 	print(kend);
-	printHex(&__KERNEL_END, HexSize_Fixed);
+	print_hex((uint32_t)&__KERNEL_END, HexSize_fixed);
 	print(prompt);
 	return;
 }

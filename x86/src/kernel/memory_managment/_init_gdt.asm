@@ -1,19 +1,18 @@
 [BITS 32]
 
 SECTION .text
-EXTERN disableProcessor
-GLOBAL _initGDT:FUNCTION (_initGDT.end - _initGDT)
+GLOBAL _init_gdt:FUNCTION (_init_gdt.end - _init_gdt)
 ; Load GDT into GDTR
 ; IN: Void
 ; OUT: Void
 ; USES: EAX
-_initGDT:
+_init_gdt:
     sub esp, 8
     mov WORD [esp], GDT.SIZE
     mov DWORD [esp + 2], GDT
     lgdt [esp]
-    jmp 0x08:.flushCS
-    .flushCS:
+    jmp 0x08:.flush_cs
+    .flush_cs:
     mov ax, 16
     mov ds, ax
     mov es, ax
@@ -29,28 +28,28 @@ GLOBAL GDT.TSS0
 ALIGN 8
 GDT:                ; Max number of TSS: 64 (64 logical cores)
     .null: DQ 0x0
-    .kernelCode:
+    .kernel_code:
         DW 0xFFFF   ; limit1
         DW 0x0      ; base1
         DB 0x0      ; base2
         DB SGMT_CODE | SGMT_EXECUTE_READ | SGMT_CODE_DATA_SEGMENT | SGMT_PRESENT    ; type_flags1
         DB 0xF | SGMT_32BIT_SEGMENT | SGMT_4K_BYTE_LIMIT                            ; limit2_flags2
         DB 0x0      ; base3
-    .kernelData:
+    .kernel_data:
         DW 0xFFFF   ; limit1
         DW 0x0      ; base1
         DB 0x0      ; base2
         DB SGMT_READ_WRITE | SGMT_CODE_DATA_SEGMENT | SGMT_PRESENT  ; type_flags1
         DB 0xF | SGMT_32BIT_SEGMENT | SGMT_4K_BYTE_LIMIT            ; limit2_flags2
         DB 0x0      ; base3
-    .userCode:
+    .user_code:
         DW 0xFFFF   ; limit1
         DW 0x0      ; base1
         DB 0x0      ; base2
         DB SGMT_CODE | SGMT_EXECUTE_READ | SGMT_CODE_DATA_SEGMENT | SGMT_PRESENT | SGMT_USER    ; type_flags1
         DB 0xF | SGMT_32BIT_SEGMENT | SGMT_4K_BYTE_LIMIT                                        ; limit2_flags2
         DB 0x0      ; base3
-    .userData:
+    .user_data:
         DW 0xFFFF   ; limit1
         DW 0x0      ; base1
         DB 0x0      ; base2

@@ -2,34 +2,43 @@
 #include "output.h"
 #include "libc/string.h"
 
-uint16_t maxColumn = VGA_WIDTH;
-uint16_t maxRow = VGA_HEIGHT + 25;
-uint16_t beginRow = 0;
-uint16_t currentRow = 0;
-uint16_t currentColumn = 0;
-uint8_t currentColor = 7;
-uint16_t *terminalBuffer = NULL;
-uint16_t *outputBuffer = (uint16_t *)0xB8000;
+uint16_t max_column = VGA_WIDTH;
+uint16_t max_row = VGA_HEIGHT + 25;
+uint16_t current_column = 0;
+uint16_t current_row = 0;
+uint8_t current_color = 7;
+uint16_t* terminal_buffer = NULL;
+uint16_t* output_buffer = (uint16_t *)0xB8000;
 
-void initTerminal()
+void init_terminal()
 {
-	currentRow = 0;
-	currentColumn = 0;
-	currentColor = getVgaColor(TColor_LightGrey, TColor_Black);
-	outputBuffer = (uint16_t *)0xB8000;
-	clearTerminal();
+	current_row = 0;
+	current_column = 0;
+	current_color = get_vga_color(TerminalColor_light_grey, TerminalColor_black);
+	output_buffer = (uint16_t *)0xB8000;
+	clear_terminal();
 }
 
-void setColor(uint8_t vgaColor)
+uint8_t get_vga_color(TerminalColor sign, TerminalColor background)
 {
-	currentColor = vgaColor;
+	return (background << 4) | sign;
 }
 
-void printHex(uint64_t number, HexSize displaySize)
+uint16_t get_vga_entry(unsigned char sign, uint8_t vga_color)
+{
+	return (vga_color << 8) | sign;
+}
+
+void set_color(uint8_t vga_color)
+{
+	current_color = vga_color;
+}
+
+void print_hex(uint64_t number, HexSize display_size)
 {
 	print("0x");
-	int8_t i = (displaySize << 3) - 4;
-	if (!displaySize)
+	int8_t i = (display_size << 3) - 4;
+	if (!display_size)
 	{
 		i = 60;
 		while (i > 4 && !(number >> (i - 4)))
@@ -39,8 +48,8 @@ void printHex(uint64_t number, HexSize displaySize)
 	{
 		tmp = (char)((number >> i) & 0xF);
 		if (tmp < 10)
-			printChar(tmp | 0x30);
+			print_char(tmp | 0x30);
 		else
-			printChar(tmp + 0x37);
+			print_char(tmp + 0x37);
 	}
 }

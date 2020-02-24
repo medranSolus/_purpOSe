@@ -1,7 +1,7 @@
 [BITS 32]
 
 SECTION .text
-EXTERN printChar
+EXTERN print_char
 GLOBAL print:FUNCTION (print.end - print)
 ; Display string that ends with NULL character
 ; IN: Address of string to display [32b]
@@ -16,7 +16,7 @@ print:
         test al, al
         jz short .quit
         push eax
-        call printChar
+        call print_char
         pop eax
         inc esi
         jmp short .loop

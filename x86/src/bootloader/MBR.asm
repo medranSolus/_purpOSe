@@ -14,9 +14,9 @@ _relocate:
     mov si, 0x7C00      ; Bootsector address
     mov di, 0x7A00      ; New address
     rep movsw
-    jmp 0:_load_VBR
+    jmp 0:_load_vbr
 
-_load_VBR:
+_load_vbr:
     sti
     mov si, msg_start
     call _print
@@ -47,15 +47,15 @@ _load_VBR:
         mov cl, [si + 3]
         int 0x13
         pop cx
-        jnc short .VBR_loaded
+        jnc short .vbr_loaded
         mov ah, 0
         int 0x13
         loop .read_disk
     mov si, msg_disk_error
     jmp _error
-    .VBR_loaded:
+    .vbr_loaded:
     push si
-    mov si, msg_VBR_loaded
+    mov si, msg_vbr_loaded
     call _print
     pop si
     jmp 0:0x7C00
@@ -87,7 +87,7 @@ _error:
 msg_start:              DB "Hard Disk MBR loaded.", 0x0D, 0x0A, 0
 msg_boot_from:          DB "Booting from partition "
     .number:            DB "1...", 0x0D, 0x0A, 0
-msg_VBR_loaded:         DB "Boot completed.", 0x0D, 0x0A, 0
+msg_vbr_loaded:         DB "Boot completed.", 0x0D, 0x0A, 0
 msg_no_boot_partition:  DB "No bootable partition!", 0
 msg_disk_error:         DB "Error reading disk for selected VBR!", 0
 
@@ -108,8 +108,8 @@ partition1:
     .last_cylinder:  DB 0xFF
     .last_head:      DB 0xFF
     .last_sector:    DB 0xFF
-    .start_LBA:      DD 0x00000001
-    .last_LBA:       DD 0xFFFFFFFF
+    .start_lba:      DD 0x00000001
+    .last_lba:       DD 0xFFFFFFFF
 
 ENTRY_SIZE EQU $ - partition1
 
@@ -122,8 +122,8 @@ partition2:
     .last_cylinder:  DB 0x00
     .last_head:      DB 0x00
     .last_sector:    DB 0x00
-    .start_LBA:      DD 0x00000000
-    .last_LBA:       DD 0x00000000
+    .start_lba:      DD 0x00000000
+    .last_lba:       DD 0x00000000
 
 partition3:
     .status:         DB 0x00
@@ -134,8 +134,8 @@ partition3:
     .last_cylinder:  DB 0x00
     .last_head:      DB 0x00
     .last_sector:    DB 0x00
-    .start_LBA:      DD 0x00000000
-    .last_LBA:       DD 0x00000000
+    .start_lba:      DD 0x00000000
+    .last_lba:       DD 0x00000000
 
 partition4:
     .status:         DB 0x00
@@ -146,7 +146,7 @@ partition4:
     .last_cylinder:  DB 0x00
     .last_head:      DB 0x00
     .last_sector:    DB 0x00
-    .start_LBA:      DD 0x00000000
-    .last_LBA:       DD 0x00000000
+    .start_lba:      DD 0x00000000
+    .last_lba:       DD 0x00000000
 
 DW 0xAA55 ; Magic boot number

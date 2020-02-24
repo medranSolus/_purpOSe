@@ -1,21 +1,21 @@
 [BITS 32]
-%include "sysVars.inc"
+%include "utils.inc"
 EXTERN GDT.TSS0
 
 SECTION .text
-GLOBAL _loadAllTSS:FUNCTION (_loadAllTSS.end - _loadAllTSS)
+GLOBAL _load_all_tss:FUNCTION (_load_all_tss.end - _load_all_tss)
 ; Load TSS pointers to GDT descriptors
 ; IN: Void
 ; OUT: Void
 ; USES: EAX, ECX
-_loadAllTSS:
+_load_all_tss:
     pushfd
     push esi
     push edi
     mov esi, TSS0
     mov edi, GDT.TSS0
     mov ecx, [PROCESSOR_COUNT]
-    .loadTSS:
+    .load_tss:
         mov eax, esi
         mov [edi + 2], ax
         shr eax, 16
@@ -23,7 +23,7 @@ _loadAllTSS:
         mov [edi + 7], ah
         add esi, TSS_SIZE
         add edi, 8
-        loop .loadTSS
+        loop .load_tss
     pop edi
     pop esi
     popfd

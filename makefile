@@ -27,7 +27,7 @@ SYSROOT = ./$(ARCH)/bin/
 C_OS_DEFINES := -D_purpose -D_purpOSe -D_PURPOSE -D__purpose__ -D__purpOSe__ -D__PURPOSE__ 
 ASM_OS_DEFINES := -d_purpose -d_purpOSe -d_PURPOSE -d__purpose__ -d__purpOSe__ -d__PURPOSE__ 
 
-LD_FLAGS = -T ./$(ARCH)/kernelScript.ld
+LD_FLAGS = -T ./$(ARCH)/kernel_script.ld
 ASM_FLAGS = -i $(ARCH_INC_DIR) $(ASM_OS_DEFINES)
 C_FLAGS = -I $(ARCH_INC_DIR) $(C_CROSS_FLAGS) $(C_OS_DEFINES)
 BOOT_FLAGS =
@@ -188,6 +188,9 @@ $(KER_OBJ_DIR)%.obj: $(KER_CROSS_SRC_DIR)%.c
 
 ######## ASM ########
 
+$(KER_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)utils/%.asm
+	$(ASM) $(ASM_FLAGS) -i $(KER_ARCH_INC_DIR) $< -o $@
+
 $(KER_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)terminal/cursor/%.asm
 	$(ASM) $(ASM_FLAGS) -i $(KER_ARCH_INC_DIR) $< -o $@
 
@@ -203,7 +206,7 @@ $(KER_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)interrupts/handlers/%.asm
 $(KER_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)interrupts/%.asm
 	$(ASM) $(ASM_FLAGS) -i $(KER_ARCH_INC_DIR) $< -o $@
 
-$(KER_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)memoryManagment/%.asm
+$(KER_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)memory_managment/%.asm
 	$(ASM) $(ASM_FLAGS) -i $(KER_ARCH_INC_DIR) $< -o $@
 
 $(KER_OBJ_DIR)%.obj: $(KER_ARCH_SRC_DIR)portIO/out/%.asm

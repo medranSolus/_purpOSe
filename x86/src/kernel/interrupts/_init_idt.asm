@@ -2,12 +2,12 @@
 
 SECTION .text
 %include "./x86/src/kernel/interrupts/intHandlers.inc"
-GLOBAL _initIDT:FUNCTION (_initIDT.end - _initIDT)
+GLOBAL _init_idt:FUNCTION (_init_idt.end - _init_idt)
 ; Initialize IDT
 ; IN: Void
 ; OUT: Void
 ; USES: EAX, ECX
-_initIDT:
+_init_idt:
     pushfd
     push _0_divideError
     push _1_debugException
@@ -30,23 +30,23 @@ _initIDT:
     push _19_simdException
     push _20_virtualizationException
     mov ecx, 20
-    .fillUpper:
+    .fill_upper:
         pop eax
         mov [IDT + ecx * 8], ax
         shr eax, 16
         mov [IDT + ecx * 8 + 6], ax
         dec ecx
         cmp cl, 15
-        jnz .fillUpper
+        jnz .fill_upper
     dec ecx
-    .fillLower:
+    .fill_lower:
         pop eax
         mov [IDT + ecx * 8], ax
         shr eax, 16
         mov [IDT + ecx * 8 + 6], ax
         dec ecx
         cmp cl, 0xFF
-        jnz .fillLower
+        jnz .fill_lower
     sub esp, 8
     mov WORD [esp], IDT.SIZE
     mov DWORD [esp + 2], IDT
