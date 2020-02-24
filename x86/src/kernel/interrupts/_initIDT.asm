@@ -1,7 +1,7 @@
 [BITS 32]
 
 SECTION .text
-%include "./x86/src/kernel/interrupts/intHandlers.s"
+%include "./x86/src/kernel/interrupts/intHandlers.inc"
 GLOBAL _initIDT:FUNCTION (_initIDT.end - _initIDT)
 ; Initialize IDT
 ; IN: Void

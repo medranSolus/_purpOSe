@@ -1,0 +1,8 @@
+%ifndef __SYSVARS_INC__
+%define __SYSVARS_INC__
+
+%define MAX_PROCESSORS 1
+
+EXTERN PROCESSOR_COUNT
+
+%endif ; __SYSVARS_INC__

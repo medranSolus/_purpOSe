@@ -1,5 +1,5 @@
 [BITS 32]
-%include "sysVars.s"
+%include "sysVars.inc"
 EXTERN GDT.TSS0
 
 SECTION .text
