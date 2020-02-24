@@ -16,12 +16,12 @@
 |     0x0480 [2  byte]: Keyboard buffer start
 |     0x0482 [2  byte]: Keyboard buffer end
 |     0x0497 [1  byte]: Last keyboard LED/Shift key state
-|---------------------------- Bootloader Image -----------------------------|------------------ Kernel Image ------------------
-| 0x00000500 - 0x000007B3 [RAM]: Stack                                      |
-| 0x000007B4 - 0x000007FF [RAM]: Disk signature, parition table, VBR vars   |
-| 0x00000800 - 0x000009FF [RAM]: VBR copy                                   |
-| 0x00000A00 - 0x000209FF [RAM]: FAT16 buffer (FAT16 max size 128 KiB)      |
-| 0x00020A00 - 0x0007FFFF [RAM]: Free (381.5 KiB)                           |
+|---------------- MBR Image ----------------|---------------- VBR Image ----------------|---------------------------- Bootloader Image -----------------------------|------------------ Kernel Image ------------------
+| 0x00000500 - 0x000079FF [RAM]: Free       | 0x00000500 - 0x000079FF [RAM]: Free       | 0x00000500 - 0x000007A3 [RAM]: Stack                                      |
+| 0x00007A00 - 0x00007BFF [RAM]: MBR copy   | 0x00007A00 - 0x00007BFF [RAM]: MBR copy   | 0x000007A4 - 0x000007FF [RAM]: Disk signature, parition table, VBR vars   |
+| 0x00007C00 - 0x00007DFF [RAM]: Loaded VBR | 0x00007C00 - 0x00007DFF [RAM]: Loaded VBR | 0x00000800 - 0x000009FF [RAM]: VBR copy                                   |
+| 0x00007C00 - 0x0007FFFF [RAM]: Free       | 0x00007C00 - 0x0007FFFF [RAM]: Free       | 0x00000A00 - 0x000209FF [RAM]: FAT16 buffer (FAT16 max size 128 KiB)      |
+|                                           |                                           | 0x00020A00 - 0x0007FFFF [RAM]: Free (381.5 KiB)                           |
 |----------------------------- Preserved Memory -----------------------------
 | 0x00080000 - 0x0009FFFF [RAM]: Extended BIOS Data Area
 | 0x000A0000 - 0x000B7FFF [VRAM]: Graphic video memory
