@@ -3,6 +3,7 @@
 KER_VER := 0.0.1_a
 BOOT_VER := 0.0.1_a
 TARGET := i386-elf
+FS = fat16
 
 ############################################ TOOLS ############################################
 
@@ -13,7 +14,7 @@ CC =
 ASM =
 LD = 
 
-###################### Architecture dependend rools ######################
+###################### Architecture dependend tools ######################
 
 LD_X86 := @./x86/tools/bin/$(TARGET)-ld
 ASM_X86 := @nasm
@@ -102,7 +103,7 @@ LIBC_OBJ_DIR = ./$(ARCH)/obj/libc/
 ACPICA_OBJ_DIR = ./$(ARCH)/obj/acpica/
 
 ifneq ($(ARCH), nan)
-BOOT_OBJ = $(patsubst %.asm, $(BOOT_OBJ_DIR)%.bin, MBR.asm VBR.asm)
+BOOT_OBJ = $(patsubst %.asm, $(BOOT_OBJ_DIR)%.bin, mbr.asm vbr_fat16.asm)
 KER_OBJ = $(patsubst %.c, $(KER_OBJ_DIR)%.obj, $(shell find $(KER_CROSS_SRC_DIR) -type f -name "*.c" -exec basename {} \;)) $(patsubst %.c, $(KER_OBJ_DIR)%.obj, $(shell find $(KER_ARCH_SRC_DIR) -type f -name "*.c" -exec basename {} \;)) $(patsubst %.asm, $(KER_OBJ_DIR)%.obj, $(shell find $(KER_ARCH_SRC_DIR) -path $(KER_ARCH_SRC_DIR)crt -prune -o -type f -name "*.asm" -exec basename {} \;))
 LIBK_OBJ = $(patsubst %.c, $(LIBK_OBJ_DIR)%.obj, $(shell find $(LIBK_CROSS_SRC_DIR) -type f -name "*.c" -exec basename {} \;)) $(patsubst %.c, $(LIBK_OBJ_DIR)%.obj, $(shell find $(LIBK_ARCH_SRC_DIR) -type f -name "*.c" -exec basename {} \;)) $(patsubst %.asm, $(LIBK_OBJ_DIR)%.obj, $(shell find $(LIBK_ARCH_SRC_DIR) -type f -name "*.asm" -exec basename {} \;))
 LIBC_OBJ = $(patsubst %.c, $(LIBC_OBJ_DIR)%.obj, $(shell find $(LIBC_CROSS_SRC_DIR) -type f -name "*.c" -exec basename {} \;)) $(patsubst %.c, $(LIBC_OBJ_DIR)%.obj, $(shell find $(LIBC_ARCH_SRC_DIR) -type f -name "*.c" -exec basename {} \;)) $(patsubst %.asm, $(LIBC_OBJ_DIR)%.obj, $(shell find $(LIBC_ARCH_SRC_DIR) -type f -name "*.asm" -exec basename {} \;))
@@ -115,46 +116,52 @@ endif
 
 .PHONY: all
 all: x86
-	$(MSG) "_purpOSe assembled"
+	$(MSG) "_purpOSe assembled."
 
 .PHONY: kernel
 kernel: kernel_x86
-	$(MSG) "Kernel assembled"
+	$(MSG) "Kernel assembled."
 
 .PHONY: boot
 boot: boot_x86
-	$(MSG) "Bootloader assembled"
+	$(MSG) "Bootloader assembled."
+
+.PHONY: acpica
+acpica: $(ACPICA_OBJ)
+
+.PHONY: libk
+libk: $(LIBK_OBJ)
+
+.PHONY: libc
+libc: $(LIBC_OBJ)
+
+.PHONY: dir_tree
+dir_tree:
+	@mkdir -p $(SYSROOT)Purpose/Boot
 
 .PHONY: clean
 clean:
 	$(eval ARCH := x86)
-	@$(RM) -f $(SYSROOT)* $(KER_OBJ_DIR)*.obj $(LIBK_OBJ_DIR)*.obj $(LIBC_OBJ_DIR)*.obj $(ACPICA_OBJ_DIR)*.obj $(BOOT_OBJ_DIR)*.bin
+	@$(RM) -rf $(SYSROOT)*
+	@$(RM) $(KER_OBJ_DIR)*.obj $(LIBK_OBJ_DIR)*.obj $(LIBC_OBJ_DIR)*.obj $(ACPICA_OBJ_DIR)*.obj $(BOOT_OBJ_DIR)*.bin
 
 ###################### Architecture dependend rules ######################
 
-.PHONY: acpica_$(ARCH)
-acpica_$(ARCH): $(ACPICA_OBJ)
-
-.PHONY: libk_$(ARCH)
-libk_$(ARCH): $(LIBK_OBJ)
-
-.PHONY: libc_$(ARCH)
-libc_$(ARCH): $(LIBC_OBJ)
-
-$(SYSROOT)purpose.ker: $(KER_OBJ) $(CRT_OBJ)
+$(SYSROOT)Purpose/purpose.ker: $(KER_OBJ) $(CRT_OBJ)
 	$(LD) $(LD_FLAGS) $(OS_OBJ) -o $@
 
-$(SYSROOT)bootpos.bin: $(BOOT_OBJ)
+$(SYSROOT)Purpose/Boot/bootpos.bin: $(BOOT_OBJ)
 	@cat $(BOOT_OBJ) > $@
 
 ######### x86 #########
 
 .PHONY: x86
 x86: boot_x86 kernel_x86
+	@sudo ./utils/mkdisk_$(FS).sh x86
 
 .PHONY: kernel_x86
 ifeq ($(ARCH), x86)
-kernel_x86: acpica_$(ARCH) libk_$(ARCH) libc_$(ARCH) $(SYSROOT)purpose.ker
+kernel_x86: dir_tree acpica libk libc $(SYSROOT)Purpose/purpose.ker
 else
 kernel_x86:
 	$(eval ARCH := x86)
@@ -163,7 +170,7 @@ endif
 
 .PHONY: boot_x86
 ifeq ($(ARCH), x86)
-boot_x86: $(SYSROOT)bootpos.bin
+boot_x86: dir_tree $(SYSROOT)Purpose/Boot/bootpos.bin
 else
 boot_x86:
 	$(eval ARCH := x86)
@@ -264,7 +271,7 @@ $(LIBC_OBJ_DIR)%.obj: $(LIBC_ARCH_SRC_DIR)%.asm
 $(BOOT_OBJ_DIR)%.bin: $(BOOT_SRC_DIR)%.asm
 	$(ASM) $(BOOT_FLAGS) $< -o $@
 
-$(BOOT_OBJ_DIR)%.bin: $(BOOT_SRC_DIR)FAT16/%.asm
+$(BOOT_OBJ_DIR)vbr_%.bin: $(BOOT_SRC_DIR)vbr/%.asm
 	$(ASM) $(BOOT_FLAGS) $< -o $@
 
 ###################### ACPICA pattern rules ######################

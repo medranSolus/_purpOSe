@@ -1,46 +1,49 @@
 #!/bin/bash
-GCC=gcc-9.1.0
+GCC=gcc-9.2.0
 _errors=0
 _arch=cross
 
-checkForNeeededPrograms
-if ((_errors > 0)); then
-    if ((_errors == 1))
-        echo "1 package has been found missing. Download it first."
-    else
-        echo "$_errors packages has been found missing. Download them first."
+function main()
+{
+    check_for_needed_apps
+    if ((_errors > 0)); then
+        if ((_errors == 1)); then
+            echo "1 package has been found missing. Download it first."
+        else
+            echo "$_errors packages has been found missing. Download them first."
+        fi
+        exit $_errors
     fi
-    exit $_errors
-fi
 
-makeObjDirs
-mkdir tools_src
-wget ftp://ftp.fu-berlin.de/unix/languages/gcc/releases/$GCC/$GCC.tar.gz
-tar xvzf $GCC.tar.gz -C ./tools_src
-rm -f $GCC.tar.gz
-cd tools_src
-git clone git://sourceware.org/git/binutils-gdb.git
-cd ..
+    make_obj_dirs
+    mkdir tools_src
+    wget ftp://ftp.fu-berlin.de/unix/languages/gcc/releases/$GCC/$GCC.tar.gz
+    tar xvzf $GCC.tar.gz -C ./tools_src
+    rm -f $GCC.tar.gz
+    cd tools_src
+    git clone git://sourceware.org/git/binutils-gdb.git
+    cd ..
 
-########## x86 ##########
-_arch=x86
-export TARGET=i386-elf
-installForArch
-########## end ##########
-rm -rf ./tools_src
+    ########## x86 ##########
+    _arch=x86
+    export TARGET=i386-elf
+    install_arch
+    ########## end ##########
+    rm -rf ./tools_src
 
-mkdir cross/inc/kernel
-mkdir cross/inc/libk
-mkdir cross/src/kernel
-mkdir cross/src/libk
+    mkdir cross/inc/kernel
+    mkdir cross/inc/libk
+    mkdir cross/src/kernel
+    mkdir cross/src/libk
+}
 
 #################### FUNCTIONS ####################
 
 # Needs to specify _arch variable and export TARGET machine
-function installForArch()
+function install_arch()
 {
     mkdir $_arch/bin
-    makeObjDirs
+    make_obj_dirs
     mkdir $_arch/tools
     export PREFIX="$PWD/$_arch/tools"
     export PATH="$PREFIX/bin:$PATH"
@@ -69,7 +72,7 @@ function installForArch()
 }
 
 # Needs to specify _arch variable
-function makeObjDirs()
+function make_obj_dirs()
 {
     mkdir $_arch/obj
     mkdir $_arch/obj/bootloader
@@ -80,10 +83,18 @@ function makeObjDirs()
 }
 
 # Shows missing packages and return number of missing in _errors variable
-function checkForNeeededPrograms()
+function check_for_needed_apps()
 {
     if ! [ -x "$(command -v git)" ]; then
         echo "Git must be installed!" >&2
+        ((_errors++))
+    fi
+    if ! [ -x "$(command -v sudo)" ]; then
+        echo "Sudo must be installed!" >&2
+        ((_errors++))
+    fi
+    if ! [ -x "$(command -v gcc)" ]; then
+        echo "Gcc must be installed!" >&2
         ((_errors++))
     fi
     if ! [ -x "$(command -v qemu-system-i386)" ]; then
@@ -133,3 +144,6 @@ function checkForNeeededPrograms()
         ((_errors++))
     }
 }
+
+# Script start
+main

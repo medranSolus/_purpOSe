@@ -1,5 +1,5 @@
 #!/bin/bash
-file=./$1/bin/purpose.ker
+file=./$1/bin/Purpose/purpose.ker
 
 if [ $1 = "x86" ]; then
     if grub-file --is-x86-multiboot $file; then
