@@ -9,6 +9,7 @@ if [ -z "$1" ]; then
     exit -1
 fi
 shopt -s extglob
+rm -f $disk_file
 dd if=/dev/zero of=$disk_file bs=10M count=1 >& /dev/null
 losetup -fP $disk_file
 mkfs.fat -F 16 $disk_file >& /dev/null
@@ -21,3 +22,4 @@ rm -rf $bin_dir/!(disk.img)
 cat $obj_dir/mbr.bin $disk_file > $bin_dir/temp.img
 mv $bin_dir/temp.img $disk_file
 ./utils/quick_tools/bin/insert_vbr_fat16_code $1
+chmod a+rw $disk_file

@@ -1,161 +1,292 @@
 [BITS 16]
-[ORG 0x0800]
+[ORG 0x0530]
 
-; Boot loader path: Purpose\Boot\bootpos.bin
-
-; Stack overwrites MBR code, top just begore disk signature and VBR variables
-STACK_SGMT  EQU 0x0050
-STACK_SIZE  EQU 0x02B4   ; Must be even
-LOAD_SGMT   EQU 0x20A0
-LOAD_BUFFER EQU 0x0000
-
-; Memory variables:
-cylinderCount       EQU 0x07B4
-partionEntryOffset  EQU 0x07B6
-
-_init:
+; Bootloader path: Purpose\Boot\bootpos.bin
+_start:
     cld
-    jmp short _relocateVBR
+    jmp short _relocate
+
+STRUC DirEntry
+    .filename:      RESB 8
+    .extension:     RESB 3
+    .attrib:        RESB 1
+    .reserved:      RESB 10
+    .time:          RESB 2
+    .date:          RESB 2
+    .start_cluster: RESB 2
+    .file_size:     RESB 4
+    .SIZE:          RESB 0
+ENDSTRUC
+STRUC MbrEntry
+    .status:         RESB 1
+    .start_cylinder: RESB 1
+    .start_head:     RESB 1
+    .start_sector:   RESB 1
+    .type:           RESB 1
+    .last_cylinder:  RESB 1
+    .last_head:      RESB 1
+    .last_sector:    RESB 1
+    .start_lba:      RESB 4
+    .last_lba:       RESB 4
+ENDSTRUC
+STRUC DAP ; 2 byte aligment required
+    .dap_size:       RESB 1
+    .reserved:       RESB 1 ; Must be 0
+    .sectors_count:  RESB 2 ; Max 127 on some BIOSes
+    .buffer_offset:  RESB 2
+    .buffer_smgt:    RESB 2
+    .start_lba_low:  RESB 4
+    .start_lba_high: RESB 4 ; Upper 16 bit of 48 bit LBA value
+    .SIZE:           RESB 0
+ENDSTRUC
+
+; Constants
+DIR_ATTRIB:
+    .READ_ONLY    EQU 0000_0001b
+    .HIDDEN_FILE  EQU 0000_0010b
+    .SYSTEM_FILE  EQU 0000_0100b
+    .VOLUME_LABEL EQU 0000_1000b
+    .SUB_DIR      EQU 0001_0000b
+    .ARCHIVE      EQU 0010_0000b
+BUFFER_DISK_SIZE EQU 0xF400 ; 122 x 512 sectors
+BOOTLOADER_SGMT  EQU 0x1000
+STACK_SGMT       EQU 0x7FE0
+STACK_TOP        EQU 0x0200
+
+; Memory variables
+partition_entry EQU 0x0500
+dap_address     EQU 0x0510
+lba_data        EQU 0x0520
+lba_fat         EQU 0x0524
+loaded_fat      EQU 0x0528 ; 1B
+buffer_vbr_rest EQU 0x0730
+buffer_fat      EQU 0x0930
+buffer_disk     EQU 0x0A30
 
 BPB: ; BIOS Parameter Block
-    .description:           DB "_purpOSe" ; 8!!!
-    .bytePerSector:         DW 512
-    .sectorsPerCluster:     DB 1
-    .reservedSectorsCount:  DW 1
-    .FATcount:              DB 2
-    .rootDirEntries:        DB 16 ; 32 bytes per entry
-    .sectorsTotal:          DW 0  ; If zero: number of sectors in volume lower
-    .mediaDescriptor:       DB 0xF0
-    .sectorsPerFAT:         DW 2
-    .sectorsPerCylinder:    DW 1 ; Must be initialized first (starting value always invalid)
-    .headsCount:            DW 1 ; Must be initialized first (starting value always invalid)
-    .hiddenSectorsCount:    DD 0 ; Ignored
-    .sectorsTotal2:         DD 0
-    .driveNumber:           DB 0x80 ; Must be initialized first (starting value always invalid)
-    .reserved:              DB 0x00 ; Windows NT flags \_____ Current FAT sector in memory
-    .signature:             DB 0x29 ;                  /
-    .volumeID:              DD 0x00 ; Can be ignored, but used to track volumes
-    .volumeLabel:           DB "Pos Volume " ; 11!!!
-    .fileSystemID:          DB "FAT16   " ; 8!!!
+    .description:            DB "_purpOSe" ; 8!!!
+    .bytes_per_sector:       DW 512 ; 512, 1024, 2048 or 4096 but for 99,99% it's 512
+    .sectors_per_cluster:    DB 1   ; 1, 2, 4, 8, 16 or 32 (128 not supported) NOTE: later for 512 * x -> bytes_per_sector >> 10 * sectors_per_cluster
+    .reserved_sectors_count: DW 1   ; Minimum 1 for vbr
+    .fat_count:              DB 2
+    .root_dir_entries_count: DW 512 ; 32 bytes per entry NOTE: Max 0x7A0 entries
+    .sectors_count:          DW 0   ; If zero: number of sectors in volume lower
+    .media_descriptor:       DB 0xF0
+    .sectors_per_fat:        DW 2
+    .sectors_per_cylinder:   DW 1   ; Must be initialized first (starting value always invalid)
+    .heads_count:            DW 1   ; Must be initialized first (starting value always invalid)
+    .hidden_sectors_count:   DD 0   ; Ignored
+    .sectors_count_long:     DD 0
+    .drive_number:           DB 0x80 ; Must be initialized first (starting value always invalid)
+    .reserved:               DB 0x00 ; Windows NT flags \_____ Current FAT sector in memory
+    .signature:              DB 0x29 ;                  /
+    .volume_id:              DD 0x00 ; Can be ignored, but used to track volumes
+    .volume_label:           DB "Pos Volume " ; 11!!!
+    .file_system_id:         DB "FAT16   " ; 8!!! (Never trust it)
     .SIZE EQU $ - BPB ; = 59
 
-_relocateVBR:
-    mov bx, ds
-    mov fs, bx  ; MBR segment (should be 0)
-    xor bp, bp
-    mov ds, bp
-    mov es, bp
-    mov gs, bp
+%define bpb_var(reg, var) [reg + BPB.%+var - BPB]
+
+_relocate:
+    cli
+    xor ax, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
     mov sp, STACK_SGMT
     mov ss, sp
-    mov sp, STACK_SIZE 
-    mov [partionEntryOffset], si
-    mov cx, 0x0100  ; Size of VBR in WORD's
-    mov si, 0x7C00  ; Bootsector address
-    mov di, 0x0800  ; New address
-    rep movsw
-    jmp 0:_locateLoader
+    mov sp, STACK_TOP
+    .partition_entry:
+        mov cx, 8
+        mov di, partition_entry
+        rep movsw
+    .vbr:
+        mov ds, ax
+        mov cx, 0x0100  ; Size of VBR in WORD's
+        mov si, 0x7C00  ; Bootsector address
+        mov di, $$      ; New address
+        rep movsw
+    mov si, BPB
+    mov bpb_var(si, drive_number), dl
+    sti
+    jmp 0:_locate_bootloader
 
-_locateLoader:
-    mov di, si
-    mov [BPB.driveNumber], dl
-    .getDiskGeometry:
-        mov ah, 8
+_locate_bootloader:
+    .check_bios_ext:
+        mov ah, 0x41
+        mov bx, 0x55AA
         int 0x13
-        shr dx, 8
-        inc dh
-        mov [BPB.headsCount], dx
-        mov [cylinderCount], ch
-        mov ch, cl
-        shr ch, 6
-        mov [cylinderCount + 1], ch
-        and cx, 0x3F
-        mov [BPB.sectorsPerCylinder], cx
-    .getRootDirCHS:
-        movzx bp, BYTE [BPB.rootDirEntries]
-        test bp, 0x0F
-        jz .rootDirSectorsGood
-        add bp, 0x10
-        .rootDirSectorsGood:
-        shr bp, 4                   ; Root dir sectors
-        mov bx, LOAD_BUFFER         ; Buffer
-        mov dh, [fs:di + 2]         ; Start head
-        mov dl, [BPB.driveNumber]   ; Driver
-        mov ch, [fs:di + 1]         ; Start cylinder
-        mov cl, [fs:di + 3]         ; Start sector
-        mov ax, [BPB.sectorsPerFAT]
-        mul BYTE [BPB.FATcount]
-        inc ax
-        add ax, [fs:di + 3]         ; Root dir start sector
-    .getBootDir:
-    
-    cli
-    jmp short $
+        jnc short .load_root_dir
+        mov si, msg_no_bios_ext
+        jmp _error
+    .load_root_dir:
+        mov cx, bpb_var(si, bytes_per_sector)
+        shr cx, 10
+        cmp cl, 0
+        jz short .no_decrement
+        dec cl
+        .no_decrement:
+        movzx ebx, WORD bpb_var(si, reserved_sectors_count)
+        shl ebx, cl
+        add ebx, [partition_entry + MbrEntry.start_lba]
+        mov [lba_fat], ebx
+        movzx ax, BYTE bpb_var(si, fat_count)
+        shl ax, cl
+        mul WORD bpb_var(si, sectors_per_fat)
+        shl edx, 16
+        mov dx, ax
+        add ebx, edx
+        movzx edx, WORD bpb_var(si, root_dir_entries_count)
+        test dl, 0x0F
+        jz short .root_dir_entries_even
+        and dl, 0xF0
+        add dx, 0x10
+        .root_dir_entries_even:
+        shr dx, 4
+        shl edx, cl
+        shl BYTE bpb_var(si, sectors_per_cluster), cl
+        mov si, dap_address
+        mov [si + DAP.sectors_count], dx
+        mov [si + DAP.start_lba_low], ebx
+        mov WORD [si + DAP.dap_size], DAP.SIZE
+        mov DWORD [si + DAP.start_lba_high], 0
+        mov DWORD [si + DAP.buffer_offset], buffer_disk
+        add ebx, edx
+        mov [lba_data], ebx
+        mov dl, [BPB.drive_number]
+        call _read_disk
+    .load_rest_of_vbr:
+        mov DWORD [si + DAP.sectors_count], (buffer_vbr_rest << 16) | 1
+        mov eax, [partition_entry + MbrEntry.start_lba]
+        inc eax
+        mov DWORD [si + DAP.start_lba_low], eax
+        call _read_disk
+    .load_sys_dir:
+        mov bp, dir_system
+        mov dh, DIR_ATTRIB.SUB_DIR
+        mov bx, 0xFFFF
+        call _find_entry
+        movzx eax, bh
+        call _load_fat
+        call _load_entry_buffer_disk
+    .load_boot_dir:
+        mov bp, dir_boot
+        .check_sys_dir_cluster:
+            call _find_entry
+            xor di, di
+            adc di, 0
+            call _load_entry_buffer_disk
+            cmp di, 0
+            jne short .check_sys_dir_cluster
+    .find_bootloader:
+        mov bp, file_boot
+        xor dh, dh
+        .check_boot_dir_cluster:
+            call _find_entry
+            jnc _load_bootloader
+            call _load_entry_buffer_disk
+            jmp short .check_boot_dir_cluster
 
-; Compare filenames
-; IN: SI = Name pattern, BX = Name to check
-; OUT: FLAGS set according to result
-nameCompare:
-    xchg di, bx
-    push cx
-    mov cx, 11
-    repe cmpsb
+; Finds entry inside directory in buffer_disk
+; IN: DS:BP = Entry name, DH = Entry attributes (0 for skip), BX = Directory next cluster entry
+; OUT: ES:DI = Entry, BX = Entry cluster, Carry set if not found
+; USES: CX, DI
+_find_entry:
+    mov cx, [BPB.root_dir_entries_count]
+    mov di, buffer_disk
+    .check_entries:
+        cmp dh, 0
+        je short .name_compare
+        test dh, [di + DirEntry.attrib]
+        jz short .skip_entry
+        .name_compare:
+            push si
+            push di
+            push cx
+            mov si, bp
+            mov cx, 11
+            repe cmpsb
+            pop cx
+            pop di
+            pop si
+        je short .found
+        .skip_entry:
+        add di, DirEntry.SIZE
+        loop .check_entries
+    cmp bx, 0xFFFF
+    jne short .not_found
+    mov si, msg_no_entry
+    call _print
+    mov si, bp
+    jmp short _error
+    .not_found:
+    stc
+    jmp short .quit
+    .found:
+    mov bx, WORD [di + DirEntry.start_cluster]
+    clc
+    .quit:
+    ret
+
+; Load selected entry into buffer
+; IN: DS:SI = DAP address, DL = Drive number, BX = Entry cluster, SS:SP+2 = Buffer segment, SS:SP+4 = Buffer address
+; OUT: BX = Entry next cluster
+; USES: EAX(_load_fat), ECX
+_load_entry:
+    cmp bh, [loaded_fat]
+    je short .current_fat
+    movzx eax, bh
+    call _load_fat
+    .current_fat:
+    movzx eax, bl
+    shl bx, 1
+    mov bx, [buffer_fat + bx]
+    movzx cx, BYTE [BPB.sectors_per_cluster]
+    mov [si + DAP.sectors_count], cx
+    dec al
+    dec al
+    mul cl
+    add eax, [lba_data]
+    mov [si + DAP.start_lba_low], eax
+    pop ax
     pop cx
-    xchg di, bx
+    shl ecx, 16
+    pop cx
+    mov [si + DAP.buffer_offset], ecx
+    push ax
+    call _read_disk
     ret
 
 ; Read data from disk
-; IN: CH = Starting cylinder, DH = Starting head, AX = Starting sector,
-;     DL = Drive number, ES:BX = Data buffer, FS:di = Active partition
-; OUT: AX = Read sector in CHS format
-readDisk:
-    cmp ax, [BPB.sectorsPerCylinder]
-    jbe .sectorsInRange
-    sub ax, [BPB.sectorsPerCylinder]
-    inc ch
-    jmp readDisk
-    .sectorsInRange:
-        push ax
-        mov cl, al
-        .checkCylinderSize:
-        cmp ch, [cylinderCount]
-        jb .checkVolumeRange
-        sub ch, [cylinderCount]
-        inc dh
-        jmp .checkCylinderSize
-    .checkVolumeRange:
-        push 5              ; Max disk read try count
-        cmp dh, [fs:di + 6]
-        jb .diskOffsetInRange
-        jg .invalidSector
-        cmp ch, [fs:di + 5]
-        jb .diskOffsetInRange
-        jg .invalidSector
-        cmp cl, [fs:di + 7]
-        jb .diskOffsetInRange
-    .invalidSector:
-        mov si, msgInvalidSector
-        jmp error
-    .diskOffsetInRange:
-        mov ax, 0x0201
-        int 13h
-        jnc short .readSuccess
-        pop ax
-        dec ax
-        push ax
-        jnz .diskOffsetInRange
-        mov si, msgDiskError
-        jmp error
-    .readSuccess:
-    pop ax
-    pop ax
+; IN: DS:SI = DAP address, DL = Drive number
+; OUT: Void
+; USES: AH
+_read_disk:
+    mov ah, 0x42
+    int 0x13
+    jnc short .quit
+    mov si, msg_disk_error
+    jmp short _error
+    .quit:
     ret
 
+; Handle unrecoverable boot error
+; IN: DS:SI = String to display
+; OUT: No-return
+; USES: AX
+_error:
+    call _print
+    .hang:
+        cli
+        hlt
+        jmp short .hang
+
 ; Print string on screen
-; IN: SI = pointer to string
+; IN: DS:SI = String to display
 ; OUT: Void
-print:
-    mov ah, 0x0e
+; USES: AX
+_print:
+    mov ah, 0x0E
     .loop:
         lodsb
         test al, al
@@ -165,23 +296,88 @@ print:
     .quit:
     ret
 
-; Handle unrecoverable boot error
-; IN: SI = Pointer to error message
-; OUT: Void
-error:
-    call print
-    .hang:
-        cli
-        hlt
-        jmp short .hang
-
-msgDiskError:       DB "RDerr", 0
-msgInvalidSector:   DB "Wrong sctr", 0
-
-dirSystem: DB "Purpose    "
-dirBoot:   DB "Boot       "
-fileBoot:  DB "bootpos bin"
+; Messages
+msg_no_bios_ext: DB "No Disk Extensions!", 0
+msg_disk_error:  DB "Disk error!", 0
 
 TIMES 510 - ($ - $$) DB 0
 
 DW 0xAA55
+
+; IN: ES:DI = Bootloader entry, BX = Bootloader cluster
+_load_bootloader:
+    movzx ecx, BYTE [BPB.sectors_per_cluster]
+    shl ecx, 9
+    dec ecx
+    mov eax, [di + DirEntry.file_size]
+    test eax, ecx
+    jz short .file_size_even
+    add eax, ecx
+    not ecx
+    and eax, ecx
+    .file_size_even:
+    cmp eax, 0x10000
+    jbe short .smaller_than_64K
+    mov si, msg_loader_too_big
+    jmp short _error
+    .smaller_than_64K:
+    shr ax, 9
+    push ax
+    xor ax, ax
+    .read_entries:
+        push ax
+        push ax
+        push BOOTLOADER_SGMT
+        call _load_entry
+        pop ax
+        add ax, [si + DAP.sectors_count]
+        cmp bx, 0xFFFF
+        je short .loader_in_memory
+        cmp ax, 0
+        jne short .read_entries
+        mov si, msg_loader_too_big
+        jmp _error
+    .loader_in_memory:
+    pop cx
+    cmp cx, ax
+    je short .loaded_correctly
+    mov si, msg_entry_corrupt
+    jmp _error
+    .loaded_correctly:
+    mov si, msg_hello
+    jmp _error
+
+; Load entry inside directory into buffer_disk
+; IN: DS:SI = DAP address, DL = Drive number, BX = Entry cluster
+; OUT: BX = Entry next cluster
+; USES: EAX(_load_entry), CX(_load_entry)
+_load_entry_buffer_disk:
+    push buffer_disk
+    push 0
+    call _load_entry
+    ret
+
+; Load selected FAT sector
+; IN: DS:SI = DAP address, DL = Drive number, EAX = FAT sector number
+; OUT: Void
+; USES: EAX
+_load_fat:
+    mov DWORD [si + DAP.sectors_count], (buffer_fat << 16) | 1
+    mov [loaded_fat], al
+    add eax, [lba_fat]
+    mov [si + DAP.start_lba_low], eax
+    call _read_disk
+    ret
+
+; Messages
+msg_no_entry:       DB "Entry not found: ", 0
+msg_loader_too_big: DB "Bootloader size exceeded 64KB!",0
+msg_entry_corrupt:  DB "Bootloader entry corrupted!", 0
+msg_hello:          DB "Hello Bootworld!", 0
+
+; Location of bootloader
+dir_system: DB "PURPOSE    ", 0
+dir_boot:   DB "BOOT       ", 0
+file_boot:  DB "BOOTPOS BIN", 0
+
+TIMES 0x400 - ($ - $$) DB 0xDD

@@ -22,16 +22,16 @@ int main(int argc, char* argv[])
             cerr << "Cannot open " << vbr_file << endl;
             return -3;
         }
-        char* buffer = new char[476];
+        char* buffer = new char[0x3DC];
         fin.seekg(3);
         fin.read(buffer, 8);
         fout.seekp(0x203);
         fout.write(buffer, 8);
 
-        fin.seekg(36);
-        fin.read(buffer, 476);
+        fin.seekg(0x24);
+        fin.read(buffer, 0x3DC);
         fout.seekp(0x224);
-        fout.write(buffer, 476);
+        fout.write(buffer, 0x3DC);
 
         fin.close();
         fout.close();

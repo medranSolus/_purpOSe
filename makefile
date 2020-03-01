@@ -28,7 +28,7 @@ SYSROOT = ./$(ARCH)/bin/
 C_OS_DEFINES := -D_purpose -D_purpOSe -D_PURPOSE -D__purpose__ -D__purpOSe__ -D__PURPOSE__ 
 ASM_OS_DEFINES := -d_purpose -d_purpOSe -d_PURPOSE -d__purpose__ -d__purpOSe__ -d__PURPOSE__ 
 
-LD_FLAGS = -T ./$(ARCH)/kernel_script.ld
+LD_FLAGS = -s -T ./$(ARCH)/kernel_script.ld
 ASM_FLAGS = -i $(ARCH_INC_DIR) $(ASM_OS_DEFINES)
 C_FLAGS = -I $(ARCH_INC_DIR) $(C_CROSS_FLAGS) $(C_OS_DEFINES)
 BOOT_FLAGS =
@@ -137,7 +137,7 @@ libc: $(LIBC_OBJ)
 
 .PHONY: dir_tree
 dir_tree:
-	@mkdir -p $(SYSROOT)Purpose/Boot
+	@mkdir -p $(SYSROOT)Purpose/Boot/
 
 .PHONY: clean
 clean:

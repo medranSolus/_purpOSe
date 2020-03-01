@@ -29,7 +29,7 @@ _load_vbr:
         add si, ENTRY_SIZE
         loop .check_bootable
     mov si, msg_no_boot_partition
-    jmp _error
+    jmp short _error
     .boot_found:
     push si
     mov si, msg_boot_from
@@ -52,12 +52,8 @@ _load_vbr:
         int 0x13
         loop .read_disk
     mov si, msg_disk_error
-    jmp _error
+    jmp short _error
     .vbr_loaded:
-    push si
-    mov si, msg_vbr_loaded
-    call _print
-    pop si
     jmp 0:0x7C00
 
 ; Print string on screen
@@ -84,7 +80,7 @@ _error:
         hlt
         jmp short .hang
 
-msg_start:              DB "Hard Disk MBR loaded.", 0x0D, 0x0A, 0
+msg_start:              DB "MBR loaded.", 0x0D, 0x0A, 0
 msg_boot_from:          DB "Booting from partition "
     .number:            DB "1...", 0x0D, 0x0A, 0
 msg_vbr_loaded:         DB "Boot completed.", 0x0D, 0x0A, 0
