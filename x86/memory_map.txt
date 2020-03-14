@@ -1,4 +1,4 @@
-------------------- LOWER MEMORY -------------------
+----------------------- LOWER MEMORY -----------------------
 | 0x00000000 - 0x000003FF [RAM]: Real mode Interrupt Vector Table
 | 0x00000400 - 0x000004FF [RAM]: BIOS Data Area
 |--------- BDA ---------
@@ -16,18 +16,18 @@
 |     0x0480 [2  byte]: Keyboard buffer start
 |     0x0482 [2  byte]: Keyboard buffer end
 |     0x0497 [1  byte]: Last keyboard LED/Shift key state
-|---------------- MBR Image ----------------|---------------------- VBR Image ----------------------|---------------------------- Bootloader Image -----------------------------|------------------ Kernel Image ------------------
-| 0x00000500 - 0x000079FF [RAM]: Free       | 0x00000500 - 0x0000050F [RAM]: Active partition entry | 0x00000500 - 0x000007A3 [RAM]: Stack                                      |
-| 0x00007A00 - 0x00007BFF [RAM]: MBR copy   | 0x00000510 - 0x0000051F [RAM]: DAP packet             | 0x000007A4 - 0x000007FF [RAM]: Disk signature, parition table, VBR vars   |
-| 0x00007C00 - 0x00007DFF [RAM]: Loaded VBR | 0x00000520 - 0x0000052F [RAM]: VBR variables          | 0x00000800 - 0x000009FF [RAM]: VBR copy                                   |
-| 0x00007C00 - 0x0007FFFF [RAM]: Free       | 0x00000530 - 0x0000092F [RAM]: Copied VBR             | 0x00000A00 - 0x000209FF [RAM]: FAT16 buffer (FAT16 max size 128 KiB)      |
-|                                           | 0x00000930 - 0x00000A2F [RAM]: FAT buffer             | 0x00020A00 - 0x0007FFFF [RAM]: Free (381.5 KiB)                           |
-|                                           | 0x00000A30 - 0x0000FF2F [RAM]: Disk buffer            |
-|                                           | 0x0000FF30 - 0x0000FFFF [RAM]: Free                   |
-|                                           | 0x00010000 - 0x0001FFFF [RAM]: Loaded bootloader      |
-|                                           | 0x00020000 - 0x0007FDFF [RAM]: Free                   |
-|                                           | 0x0007FE00 - 0x0007FFFF [RAM]: Stack                  |
-|----------------------------------------- Preserved Memory -----------------------------------------
+|---------------- MBR Image ----------------|---------------------- VBR Image ----------------------|------------------- Bootloader Image ------------------|------------------ Kernel Image ------------------
+| 0x00000500 - 0x000079FF [RAM]: Free       | 0x00000500 - 0x0000050F [RAM]: Active partition entry | 0x00000500 - 0x0000050F [RAM]: Active partition entry |
+| 0x00007A00 - 0x00007BFF [RAM]: MBR copy   | 0x00000510 - 0x0000051F [RAM]: DAP packet             | 0x00000510 - 0x0000051F [RAM]: DAP packet             |
+| 0x00007C00 - 0x00007DFF [RAM]: Loaded VBR | 0x00000520 - 0x0000052F [RAM]: VBR variables          | 0x00000520 - 0x0000052F [RAM]: VBR variables          |
+| 0x00007C00 - 0x0007FFFF [RAM]: Free       | 0x00000530 - 0x0000092F [RAM]: Copied VBR             | 0x00000530 - 0x0000092F [RAM]: VBR                    |
+|                                           | 0x00000930 - 0x00000A2F [RAM]: FAT buffer             | 0x00000930 - 0x00000A2F [RAM]: FAT buffer             |
+|                                           | 0x00000A30 - 0x0000FF2F [RAM]: Disk buffer            | 0x00000A30 - 0x0000FF2F [RAM]: Disk buffer            |
+|                                           | 0x0000FF30 - 0x0000FFFF [RAM]: Free                   | 0x0000FF30 - 0x0000FFFF [RAM]: Free                   |
+|                                           | 0x00010000 - 0x0001FFFF [RAM]: Loaded bootloader      | 0x00010000 - 0x0001FFFF [RAM]: Bootloader             |
+|                                           | 0x00020000 - 0x0007FDFF [RAM]: Free                   | 0x00020000 - 0x0007FDFF [RAM]: Free                   |
+|                                           | 0x0007FE00 - 0x0007FFFF [RAM]: Stack                  | 0x0007FE00 - 0x0007FFFF [RAM]: Stack                  |
+|--------------------- Preserved Memory --------------------
 | 0x00080000 - 0x0009FFFF [RAM]: Extended BIOS Data Area
 | 0x000A0000 - 0x000B7FFF [VRAM]: Graphic video memory
 | 0x000B8000 - 0x000BFCFF [VRAM]: Text video memory for colour monitors
@@ -35,12 +35,12 @@
 | 0x000C0000 - 0x000C7FFF [ROM]: Video BIOS
 | 0x000C8000 - 0x000EFFFF [ROM]: Mapped hardware and other
 | 0x000F0000 - 0x000FFFFF [ROM]: Motherboard BIOS
-------------------- UPPER MEMORY -------------------
+----------------------- UPPER MEMORY -----------------------
 | 0x00100000 - 0x00EFFFFF [RAM]: Free if present
 | 0x00F00000 - 0x00FFFFFF [OUT]: ISA Memory Hole (If less memory than 4GB -> ???)
 | 0x01000000 - 0xBFFFFFFF [RAM]: Free if present
 | 0xC0000000 - 0xFFFFFFFF [OUT]: PCI devicec, PnP NVRAM?, IO APIC's, local APIC's, BIOS, ... (depends on motherboards and devices)
------------------ x64 MEMORY > 4GB -----------------
+--------------------- x64 MEMORY > 4GB ---------------------
 | 0x0000000100000000 - 0xFFFFFFFFFFFFFFFF [RAM]: Free if present
 | 0x???????????????? - 0x???????????????? [OUT]: Possibly memory mapped hardware but typically not)
-----------------------------------------------------
+------------------------------------------------------------

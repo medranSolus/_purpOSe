@@ -373,7 +373,7 @@ _load_fat:
 msg_no_entry:       DB "Entry not found: ", 0
 msg_loader_too_big: DB "Bootloader size exceeded 64KB!",0
 msg_entry_corrupt:  DB "Bootloader entry corrupted!", 0
-msg_hello:          DB "Hello Bootworld!", 0
+msg_hello:          DB "Bootloader file in memory.", 0x0D, 0x0A, 0
 
 ; Location of bootloader
 dir_system: DB "PURPOSE    ", 0

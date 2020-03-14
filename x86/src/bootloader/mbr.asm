@@ -18,8 +18,6 @@ _relocate:
 
 _load_vbr:
     sti
-    mov si, msg_start
-    call _print
     mov si, partition1
     mov cx, 4
     .check_bootable:
@@ -80,10 +78,8 @@ _error:
         hlt
         jmp short .hang
 
-msg_start:              DB "MBR loaded.", 0x0D, 0x0A, 0
 msg_boot_from:          DB "Booting from partition "
     .number:            DB "1...", 0x0D, 0x0A, 0
-msg_vbr_loaded:         DB "Boot completed.", 0x0D, 0x0A, 0
 msg_no_boot_partition:  DB "No bootable partition!", 0
 msg_disk_error:         DB "Error reading disk for selected VBR!", 0
 
