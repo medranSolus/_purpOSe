@@ -1,7 +1,9 @@
 #!/bin/bash
-GCC=gcc-9.2.0
+GCC=gcc-9.3.0
 _errors=0
 _arch=cross
+_gcc_git=ftp://ftp.fu-berlin.de/unix/languages/gcc/releases/$GCC/$GCC.tar.gz
+_binutils_git=git://sourceware.org/git/binutils-gdb.git
 
 function main()
 {
@@ -17,11 +19,11 @@ function main()
 
     make_obj_dirs
     mkdir tools_src
-    wget ftp://ftp.fu-berlin.de/unix/languages/gcc/releases/$GCC/$GCC.tar.gz
+    wget $_gcc_git
     tar xvzf $GCC.tar.gz -C ./tools_src
     rm -f $GCC.tar.gz
     cd tools_src
-    git clone git://sourceware.org/git/binutils-gdb.git
+    git clone $_binutils_git
     cd ..
 
     ########## x86 ##########
@@ -52,7 +54,9 @@ function install_arch()
     mkdir build-gcc
     cd build-binutils
     ../binutils-gdb/configure --target=$TARGET --prefix="$PREFIX" --with-sysroot --disable-nls --disable-werror
-    make
+    proc=$(nproc)
+    ((proc++))
+    make -j$proc
     make install
     which -- $TARGET-as || echo $TARGET-as is not in the PATH
     cd ../build-gcc
@@ -113,34 +117,35 @@ function check_for_needed_apps()
         echo "Flex must be installed!" >&2
         ((_errors++))
     fi
+    pacman -Q gmp >/dev/null 2>&1 ||
     dpkg -s "libgmp3-dev" >/dev/null 2>&1 ||
     {
-        echo "libgmp3-dev must be installed!";
+        echo "GMP must be installed!";
         ((_errors++))
     }
+    pacman -Q libmpc >/dev/null 2>&1 ||
     dpkg -s "libmpc-dev" >/dev/null 2>&1 ||
     {
-        echo "libmpc-dev must be installed!";
+        echo "MPC must be installed!";
         ((_errors++))
     }
+    pacman -Q mpfr >/dev/null 2>&1 ||
     dpkg -s "libmpfr-dev" >/dev/null 2>&1 ||
     {
-        echo "libmpfr-dev must be installed!";
+        echo "MPFR must be installed!";
         ((_errors++))
     }
+    pacman -Q texinfo >/dev/null 2>&1 ||
     dpkg -s "texinfo" >/dev/null 2>&1 ||
     {
         echo "Texinfo must be installed!";
         ((_errors++))
     }
+    pacman -Q yay >/dev/null 2>&1 &&
+    yay -Q cloog >/dev/null 2>&1 ||
     dpkg -s "libcloog-isl-dev" >/dev/null 2>&1 ||
     {
-        echo "libcloog-isl-dev must be installed!";
-        ((_errors++))
-    }
-    dpkg -s "libisl-dev" >/dev/null 2>&1 ||
-    {
-        echo "libisl-dev must be installed!";
+        echo "CLooG must be installed!";
         ((_errors++))
     }
 }
