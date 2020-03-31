@@ -17,7 +17,6 @@ function main()
         exit $_errors
     fi
 
-    make_obj_dirs
     mkdir tools_src
     wget $_gcc_git
     tar xvzf $GCC.tar.gz -C ./tools_src
@@ -45,7 +44,7 @@ function main()
 function install_arch()
 {
     mkdir $_arch/bin
-    make_obj_dirs
+    make_dirs
     mkdir $_arch/tools
     export PREFIX="$PWD/$_arch/tools"
     export PATH="$PREFIX/bin:$PATH"
@@ -76,7 +75,7 @@ function install_arch()
 }
 
 # Needs to specify _arch variable
-function make_obj_dirs()
+function make_dirs()
 {
     mkdir $_arch/obj
     mkdir $_arch/obj/bootloader

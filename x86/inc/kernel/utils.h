@@ -6,7 +6,7 @@
 
 extern uint32_t PROCESSOR_COUNT;
 
-extern void panic(const char * msg);
+void panic(const char * msg) __attribute__ ((noreturn));
 extern void _disable_processor();
 
 #endif // __UTILS_H__

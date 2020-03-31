@@ -14,7 +14,7 @@ dd if=/dev/zero of=$disk_file bs=10M count=1 >& /dev/null
 losetup -fP $disk_file
 mkfs.fat -F 16 $disk_file >& /dev/null
 mkdir -p $mount_dir
-mount -o loop /dev/loop0 $mount_dir
+mount -t msdos -o loop /dev/loop0 $mount_dir
 cp -r $bin_dir/!(root|disk.img) $mount_dir
 umount $mount_dir
 losetup -d /dev/loop0
