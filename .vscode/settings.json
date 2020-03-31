@@ -1,0 +1,9 @@
+{
+    "files.associations": {
+        "output.h": "c"
+    },
+    "doxdocgen.c.triggerSequence": "///",
+    "doxdocgen.file.versionTag": "@version 0.0.1_a",
+    "doxdocgen.generic.authorTag": "@author {author}",
+    "doxdocgen.generic.dateFormat": "DD-MM-YYYY"
+}

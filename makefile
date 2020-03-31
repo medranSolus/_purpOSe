@@ -52,14 +52,14 @@ dir_tree:
 clean:
 	$(eval ARCH := x86)
 	@$(RM) -rf $(SYSROOT_DIR)*
-	@$(RM) $(KER_OBJ_DIR)* $(LIBK_OBJ_DIR)* $(LIBC_OBJ_DIR)* $(ACPICA_OBJ_DIR)* $(BOOT_OBJ_DIR)*
+	@$(RM) $(KER_OBJ_DIR)*.obj $(LIBK_OBJ_DIR)*.obj $(LIBC_OBJ_DIR)*.obj $(ACPICA_OBJ_DIR)*.obj $(BOOT_OBJ_DIR)*.bin
 
 ###################### Architecture specyfic ######################
 
 $(SYSROOT_DIR)Purpose/purpose.ker: $(KER_OBJ) $(CRT_OBJ)
 	$(LD) $(LD_FLAGS) $(OS_OBJ) -o $@
 
-$(SYSROOT_DIR)Purpose/Boot/bootpos.bio: $(BOOT_OBJ)
+$(SYSROOT_DIR)Purpose/Boot/bootpos.bs: $(BOOT_OBJ)
 	@cat $(BOOT_OBJ) > $@
 
 ########### x86 ###########
@@ -73,7 +73,7 @@ x86: dir_tree boot_x86 kernel_x86
 kernel_x86: acpica libk libc $(SYSROOT_DIR)Purpose/purpose.ker
 
 .PHONY: boot_x86
-boot_x86: $(SYSROOT_DIR)Purpose/Boot/bootpos.bio
+boot_x86: $(SYSROOT_DIR)Purpose/Boot/bootpos.bs
 else
 x86:
 	$(eval ARCH := x86)

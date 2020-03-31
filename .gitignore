@@ -38,3 +38,4 @@ tools/
 
 # Scratch
 .vscode/
+!.vscode/settings.json

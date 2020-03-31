@@ -1,9 +1,9 @@
 /**
  * @file string.h
  * @author Marek Machliński
- * @brief 
- * @version 0.0.1
- * @date 2019-07-22
+ * @brief Standard library header.
+ * @version 0.0.1_a
+ * @date 22-07-2019
  * 
  * @copyright Copyright (c) 2019
  * 
@@ -18,15 +18,15 @@ extern "C" {
 #endif
 
 /**
- * @brief           Get length of a string without null char.
+ * @brief Get length of a string without null char.
  * 
- * @param str:      Pointer to null-terminated C string.
- * @return size_t:  Length of a null-terminated string.
+ * @param str: Pointer to null-terminated C string.
+ * @return size_t: Length of a null-terminated string.
  */
 extern size_t strlen(const char* str);
 
 #if defined(__cplusplus)
-} /* extern "C" */
+} // extern "C"
 #endif
 
 #endif // __STRING_H__

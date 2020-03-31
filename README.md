@@ -44,7 +44,7 @@ After creation of toolchain **GNU Make** is used to compile project. Not specify
 ## Code conventions
 To unify code style here are rules followed by this project:
   - Makefile variables are named with **ALL_CAPS**.
-  - Macro, constants and defines are named with **ALL_CAPS**.
+  - Macro, constants, global variables and defines are named with **ALL_CAPS**.
   - Functions and variables are named with **snake_case**.
   - Assembly functions have to be preceded with '_'.
   - Structures and other data types are named with **PascalCase**.
@@ -52,6 +52,7 @@ To unify code style here are rules followed by this project:
   - Avoid short names, let every function describe itself but don't make them too long. For header functions that MAY (think twice) need additional description, add comment.
   - Every assembly funtion needs to be in seperate file. Only bootloader is exception.
   - Try to keep not connected functions in seperate files when possible. If so for every header create directory containing such functions with same name as header file.
+  - No space before asterisks or ampersands and one after in type declarations.
 
 ---
 Tips:

@@ -1,3 +1,13 @@
+/**
+ * @file archconfig.h
+ * @author Marek Machliński
+ * @brief ACPICA configuration header for x86 architecture.
+ * @version 0.0.1_a
+ * @date 31-03-2020
+ * 
+ * @copyright Copyright (c) 2020
+ * 
+ */
 #ifndef __ARCHCONFIG_H__
 #define __ARCHCONFIG_H__
 

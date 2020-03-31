@@ -1,7 +1,7 @@
 [BITS 16]
 [ORG 0x0530]
 
-; Bootloader path: Purpose\Boot\bootpos.bio
+; Bootloader path: Purpose\Boot\bootpos.bs
 _start:
     cld
     jmp short _relocate
@@ -378,6 +378,6 @@ msg_hello:          DB "Bootloader file in memory.", 0x0D, 0x0A, 0
 ; Location of bootloader
 dir_system: DB "PURPOSE    ", 0
 dir_boot:   DB "BOOT       ", 0
-file_boot:  DB "BOOTPOS BIO", 0
+file_boot:  DB "BOOTPOS BS ", 0
 
 TIMES 0x400 - ($ - $$) DB 0xDD
