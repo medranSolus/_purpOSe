@@ -1,7 +1,7 @@
 #include "acpi.h"
 
 /*
- * @brief Called during OSL initialization
+ * @brief Called during OSL initialization.
  * 
  * @return ACPI_STATUS: 
  */
@@ -11,7 +11,7 @@ ACPI_STATUS AcpiOsInitialize()
 }
 
 /*
- * @brief Callend during ACPICA shutingdow itself. Can dealloc memory from AcpiOsInitialize
+ * @brief Callend during ACPICA shutingdow itself. Can dealloc memory from AcpiOsInitialize.
  * 
  * @return ACPI_STATUS: 
  */
@@ -21,7 +21,7 @@ ACPI_STATUS AcpiOsTerminate()
 }
 
 /*
- * @brief Gets pointer from memory to RSDP
+ * @brief Gets pointer from memory to RSDP.
  * 
  * @return ACPI_PHYSICAL_ADDRESS: 
  */
@@ -33,7 +33,7 @@ ACPI_PHYSICAL_ADDRESS AcpiOsGetRootPointer()
 }
 
 /*
- * @brief Overrides names for existing ACPI objects
+ * @brief Overrides names for existing ACPI objects.
  * 
  * @param predefinedObject: 
  * @param newValue: 
@@ -47,7 +47,7 @@ ACPI_STATUS AcpiOsPredefinedOverride(const ACPI_PREDEFINED_NAMES *predefinedObje
 }
 
 /*
- * @brief Ovverides names of ACPI tables
+ * @brief Overides names of ACPI tables.
  * 
  * @param existingTable: 
  * @param newTable: 

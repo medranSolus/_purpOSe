@@ -1,3 +1,9 @@
+; File: crti.asm
+; Author: Marek Machliński
+; Brief: GCC standard library funtion headers for initialization and finalization.
+;
+; Copyright (c) 2020
+;
 [BITS 32]
 
 SECTION .init

@@ -6,7 +6,7 @@ ASM_OS_DEFINES := -d_purpose -d_purpOSe -d_PURPOSE -d__purpose__ -d__purpOSe__ -
 LD_FLAGS = -s -T ./$(ARCH)/kernel_script.ld
 ASM_FLAGS = -i $(ARCH_INC_DIR) $(ASM_OS_DEFINES)
 C_FLAGS = -I $(ARCH_INC_DIR) $(C_CROSS_FLAGS) $(C_OS_DEFINES)
-BOOT_ASM_FLAGS =
+BOOT_ASM_FLAGS = -i $(BOOT_SRC_DIR)
 
 KER_C_FLAGS = $(KER_CROSS_INC)
 LIBK_C_FLAGS = $(LIBK_CROSS_INC)

@@ -3,7 +3,7 @@
  * @author Marek Machliński
  * @brief Standard library header.
  * @version 0.0.1_a
- * @date 22-07-2019
+ * @date 22.07.2019
  * 
  * @copyright Copyright (c) 2019
  * 

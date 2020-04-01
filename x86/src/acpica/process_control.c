@@ -1,7 +1,7 @@
 #include "acpi.h"
 
 /*
- * @brief Return process ID
+ * @brief Return process ID.
  * 
  * @return ACPI_THREAD_ID: 
  */
@@ -11,7 +11,7 @@ ACPI_THREAD_ID AcpiOsGetThreadId()
 }
 
 /*
- * @brief Create new thread/process with entry point in function and params defined in context
+ * @brief Create new thread/process with entry point in function and params defined in context.
  * 
  * @param type: 
  * @param function: 
@@ -25,7 +25,7 @@ ACPI_STATUS AcpiOsExecute(ACPI_EXECUTE_TYPE type, ACPI_OSD_EXEC_CALLBACK functio
 }
 
 /*
- * @brief Put current thread/process to sleep
+ * @brief Put current thread/process to sleep.
  * 
  * @param milliseconds: 
  */
@@ -34,7 +34,7 @@ void AcpiOsSleep(UINT64 milliseconds)
 }
 
 /*
- * @brief Put current thread/proccess to sleep
+ * @brief Put current thread/proccess to sleep.
  * 
  * @param microseconds: 
  */

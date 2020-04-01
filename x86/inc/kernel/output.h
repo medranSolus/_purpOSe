@@ -3,7 +3,7 @@
  * @author Marek Machliński
  * @brief Basic ways to output data on screen.
  * @version 0.0.1_a
- * @date 31-03-2020
+ * @date 31.03.2020
  * 
  * @copyright Copyright (c) 2020
  * 

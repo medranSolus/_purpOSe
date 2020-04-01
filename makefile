@@ -59,8 +59,8 @@ clean:
 $(SYSROOT_DIR)Purpose/purpose.ker: $(KER_OBJ) $(CRT_OBJ)
 	$(LD) $(LD_FLAGS) $(OS_OBJ) -o $@
 
-$(SYSROOT_DIR)Purpose/Boot/bootpos.bs: $(BOOT_OBJ)
-	@cat $(BOOT_OBJ) > $@
+$(SYSROOT_DIR)Purpose/Boot/bootpos.COM: $(BOOT_OBJ)
+	@cp $(BOOT_S2_OBJ) $@
 
 ########### x86 ###########
 
@@ -73,9 +73,11 @@ x86: dir_tree boot_x86 kernel_x86
 kernel_x86: acpica libk libc $(SYSROOT_DIR)Purpose/purpose.ker
 
 .PHONY: boot_x86
-boot_x86: $(SYSROOT_DIR)Purpose/Boot/bootpos.bs
+boot_x86: $(SYSROOT_DIR)Purpose/Boot/bootpos.COM
 else
 x86:
 	$(eval ARCH := x86)
-	@$(MAKE) $@ --no-print-directory ARCH=$(ARCH) LD="$(LD_X86)" CC="$(CC_X86)" ASM="$(ASM_X86)" LD_FLAGS="$(LD_FLAGS) $(LD_X86_FLAGS)" ASM_FLAGS="$(ASM_FLAGS) $(ASM_X86_FLAGS)" C_FLAGS="$(C_FLAGS) $(C_X86_FLAGS)" BOOT_ASM_FLAGS="$(BOOT_ASM_X86_FLAGS)"
+	@$(MAKE) $@ --no-print-directory ARCH=$(ARCH) LD="$(LD_X86)" CC="$(CC_X86)" \
+		ASM="$(ASM_X86)" LD_FLAGS="$(LD_FLAGS) $(LD_X86_FLAGS)" ASM_FLAGS="$(ASM_FLAGS) \
+		$(ASM_X86_FLAGS)" C_FLAGS="$(C_FLAGS) $(C_X86_FLAGS)" BOOT_ASM_FLAGS="$(BOOT_ASM_FLAGS) $(BOOT_ASM_X86_FLAGS)"
 endif

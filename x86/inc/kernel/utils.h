@@ -3,7 +3,7 @@
  * @author Marek Machliński
  * @brief Header with utility functions.
  * @version 0.0.1_a
- * @date 01-04-2020
+ * @date 01.04.2020
  * 
  * @copyright Copyright (c) 2020
  * 

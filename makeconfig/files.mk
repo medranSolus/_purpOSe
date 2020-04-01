@@ -23,7 +23,7 @@ ACPICA_OBJ = $(patsubst %.c, $(ACPICA_OBJ_DIR)%.obj, $(ACPICA_C_SRC))
 
 ifneq ($(ARCH), nan)
 BOOT_S1_VBR_ASM_SRC = $(shell find $(BOOT_SRC_DIR)stage_1/vbr/ -type f -name "*.asm" -exec basename {} \;)
-BOOT_S2_ASM_SRC = $(shell find $(BOOT_SRC_DIR)stage_2/ -type f -name "*.asm" -exec basename {} \;)
+BOOT_S2_ASM_SRC = main.asm
 KER_C_SRC = $(shell find $(KER_CROSS_SRC_DIR) -type f -name "*.c" -exec basename {} \;) \
 	$(shell find $(KER_ARCH_SRC_DIR) -type f -name "*.c" -exec basename {} \;)
 KER_ASM_SRC = $(shell find $(KER_ARCH_SRC_DIR) -path $(KER_ARCH_SRC_DIR)crt -prune -o -type f -name "*.asm" -exec basename {} \;)

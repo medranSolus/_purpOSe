@@ -3,7 +3,7 @@
  * @author Marek Machliński
  * @brief Header containig cursor modification methods.
  * @version 0.0.1_a
- * @date 31-03-2020
+ * @date 31.03.2020
  * 
  * @copyright Copyright (c) 2020
  * 

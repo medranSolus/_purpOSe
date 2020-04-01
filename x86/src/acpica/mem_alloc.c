@@ -1,7 +1,7 @@
 #include "acpi.h"
 
 /*
- * @brief Map physicallAddress to virtual and allocate new page if needed (address translation + malloc) (maybe new heap needed)
+ * @brief Map physicallAddress to virtual and allocate new page if needed (address translation + malloc) (maybe new heap needed).
  * 
  * @param physicalAddress: 
  * @param length: 
@@ -13,7 +13,7 @@ void *AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS physicalAddress, ACPI_SIZE length)
 }
 
 /*
- * @brief Free page frame(s) alocated for physicall address with length and mark as free (maybe new heap needed)
+ * @brief Free page frame(s) alocated for physicall address with length and mark as free (maybe new heap needed).
  * 
  * @param where: 
  * @param length: 
@@ -23,7 +23,7 @@ void AcpiOsUnmapMemory(void *where, ACPI_SIZE length)
 }
 
 /*
- * @brief Translate logicalAddress (virtual) to physicalAddress
+ * @brief Translate logicalAddress (virtual) to physicalAddress.
  * 
  * @param logicalAddress: 
  * @param physicalAddress: 
@@ -38,7 +38,7 @@ ACPI_STATUS AcpiOsGetPhysicalAddress(void *logicalAddress, ACPI_PHYSICAL_ADDRESS
 }
 
 /*
- * @brief Dynamic memory allocation (just malloc, NULL on error)
+ * @brief Dynamic memory allocation (just malloc, NULL on error).
  * 
  * @param size: 
  * @return void*: 
@@ -49,7 +49,7 @@ void *AcpiOsAllocate(ACPI_SIZE size)
 }
 
 /*
- * @brief Free dynamic memory
+ * @brief Free dynamic memory.
  * 
  * @param memory: 
  */
@@ -58,7 +58,7 @@ void AcpiOsFree(void *memory)
 }
 
 /*
- * @brief Check if memory is readable (if exist in page structure)
+ * @brief Check if memory is readable (if exist in page structure).
  * 
  * @param memory: 
  * @param length: 
@@ -70,7 +70,7 @@ BOOLEAN AcpiOsReadable(void *memory, ACPI_SIZE length)
 }
 
 /*
- * @brief Check if memory is writable (if exist in page structure and write bit set)
+ * @brief Check if memory is writable (if exist in page structure and write bit set).
  * 
  * @param memory: 
  * @param length: 

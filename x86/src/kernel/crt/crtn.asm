@@ -1,3 +1,9 @@
+; File: crtn.asm
+; Author: Marek Machliński
+; Brief: GCC standard library funtion bottoms for initialization and finalization.
+;
+; Copyright (c) 2020
+;
 [BITS 32]
 
 SECTION .init
