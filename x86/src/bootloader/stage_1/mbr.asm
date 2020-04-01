@@ -1,3 +1,9 @@
+; File: mbr.asm
+; Author: Marek Machliński
+; Brief: Basic MBR with single partition.
+;
+; Copyright (c) 2020
+;
 [BITS 16]
 [ORG 0x7A00]
 
@@ -15,6 +21,8 @@ _relocate:
     mov di, 0x7A00      ; New address
     rep movsw
     jmp 0:_load_vbr
+
+%include "print.asm"
 
 _load_vbr:
     sti
@@ -53,20 +61,6 @@ _load_vbr:
     jmp short _error
     .vbr_loaded:
     jmp 0:0x7C00
-
-; Print string on screen
-; IN: SI = pointer to string
-; OUT: Void
-_print:
-    mov ah, 0x0e
-    .loop:
-        lodsb
-        test al, al
-        jz short .quit
-        int 0x10
-        jmp short .loop
-    .quit:
-    ret
 
 ; Handle unrecoverable boot error
 ; IN: SI = Pointer to error message

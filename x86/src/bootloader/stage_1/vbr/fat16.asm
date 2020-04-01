@@ -1,53 +1,22 @@
+; File: fat16.asm
+; Author: Marek Machliński
+; Brief: VBR for FAT16 loading bootloader into memory.
+;
+; Copyright (c) 2020
+;
 [BITS 16]
 [ORG 0x0530]
 
-; Bootloader path: Purpose\Boot\bootpos.bs
+; Bootloader path: Purpose\Boot\bootpos.COM
 _start:
     cld
     jmp short _relocate
 
-STRUC DirEntry
-    .filename:      RESB 8
-    .extension:     RESB 3
-    .attrib:        RESB 1
-    .reserved:      RESB 10
-    .time:          RESB 2
-    .date:          RESB 2
-    .start_cluster: RESB 2
-    .file_size:     RESB 4
-    .SIZE:          RESB 0
-ENDSTRUC
-STRUC MbrEntry
-    .status:         RESB 1
-    .start_cylinder: RESB 1
-    .start_head:     RESB 1
-    .start_sector:   RESB 1
-    .type:           RESB 1
-    .last_cylinder:  RESB 1
-    .last_head:      RESB 1
-    .last_sector:    RESB 1
-    .start_lba:      RESB 4
-    .last_lba:       RESB 4
-ENDSTRUC
-STRUC DAP ; 2 byte aligment required
-    .dap_size:       RESB 1
-    .reserved:       RESB 1 ; Must be 0
-    .sectors_count:  RESB 2 ; Max 127 on some BIOSes
-    .buffer_offset:  RESB 2
-    .buffer_smgt:    RESB 2
-    .start_lba_low:  RESB 4
-    .start_lba_high: RESB 4 ; Upper 16 bit of 48 bit LBA value
-    .SIZE:           RESB 0
-ENDSTRUC
+%include "fat_structures.inc"
+%include "mbr_entry.inc"
+%include "dap.inc"
 
 ; Constants
-DIR_ATTRIB:
-    .READ_ONLY    EQU 0000_0001b
-    .HIDDEN_FILE  EQU 0000_0010b
-    .SYSTEM_FILE  EQU 0000_0100b
-    .VOLUME_LABEL EQU 0000_1000b
-    .SUB_DIR      EQU 0001_0000b
-    .ARCHIVE      EQU 0010_0000b
 BUFFER_DISK_SIZE EQU 0xF400 ; 122 x 512 sectors
 BOOTLOADER_SGMT  EQU 0x1000
 STACK_SGMT       EQU 0x7FE0
@@ -197,7 +166,7 @@ _find_entry:
     .check_entries:
         cmp dh, 0
         je short .name_compare
-        test dh, [di + DirEntry.attrib]
+        test dh, [di + FatEntry.attrib]
         jz short .skip_entry
         .name_compare:
             push si
@@ -211,7 +180,7 @@ _find_entry:
             pop si
         je short .found
         .skip_entry:
-        add di, DirEntry.SIZE
+        add di, FatEntry.SIZE
         loop .check_entries
     cmp bx, 0xFFFF
     jne short .not_found
@@ -223,7 +192,7 @@ _find_entry:
     stc
     jmp short .quit
     .found:
-    mov bx, WORD [di + DirEntry.start_cluster]
+    mov bx, WORD [di + FatEntry.start_cluster]
     clc
     .quit:
     ret
@@ -281,20 +250,7 @@ _error:
         hlt
         jmp short .hang
 
-; Print string on screen
-; IN: DS:SI = String to display
-; OUT: Void
-; USES: AX
-_print:
-    mov ah, 0x0E
-    .loop:
-        lodsb
-        test al, al
-        jz short .quit
-        int 0x10
-        jmp short .loop
-    .quit:
-    ret
+%include "print.asm"
 
 ; Messages
 msg_no_bios_ext: DB "No Disk Extensions!", 0
@@ -309,7 +265,7 @@ _load_bootloader:
     movzx ecx, BYTE [BPB.sectors_per_cluster]
     shl ecx, 9
     dec ecx
-    mov eax, [di + DirEntry.file_size]
+    mov eax, [di + FatEntry.file_size]
     test eax, ecx
     jz short .file_size_even
     add eax, ecx
@@ -344,8 +300,16 @@ _load_bootloader:
     mov si, msg_entry_corrupt
     jmp _error
     .loaded_correctly:
-    mov si, msg_hello
+    mov ax, BOOTLOADER_SGMT
+    mov ds, ax
+    cmp DWORD [ds:0], 0x4D4F43C3 ; Bootloader magic number
+    je short .correct_header
+    xor ax, ax
+    mov ds, ax
+    mov si, msg_unknown_format
     jmp _error
+    .correct_header:
+    jmp BOOTLOADER_SGMT:0x4
 
 ; Load entry inside directory into buffer_disk
 ; IN: DS:SI = DAP address, DL = Drive number, BX = Entry cluster
@@ -373,11 +337,12 @@ _load_fat:
 msg_no_entry:       DB "Entry not found: ", 0
 msg_loader_too_big: DB "Bootloader size exceeded 64KB!",0
 msg_entry_corrupt:  DB "Bootloader entry corrupted!", 0
+msg_unknown_format: DB "Unknown bootloader file header!", 0
 msg_hello:          DB "Bootloader file in memory.", 0x0D, 0x0A, 0
 
 ; Location of bootloader
 dir_system: DB "PURPOSE    ", 0
 dir_boot:   DB "BOOT       ", 0
-file_boot:  DB "BOOTPOS BS ", 0
+file_boot:  DB "BOOTPOS COM", 0
 
 TIMES 0x400 - ($ - $$) DB 0xDD
