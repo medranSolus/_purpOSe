@@ -226,35 +226,10 @@ _load_entry:
     call _read_disk
     ret
 
-; Read data from disk
-; IN: DS:SI = DAP address, DL = Drive number
-; OUT: Void
-; USES: AH
-_read_disk:
-    mov ah, 0x42
-    int 0x13
-    jnc short .quit
-    mov si, msg_disk_error
-    jmp short _error
-    .quit:
-    ret
-
-; Handle unrecoverable boot error
-; IN: DS:SI = String to display
-; OUT: No-return
-; USES: AX
-_error:
-    call _print
-    .hang:
-        cli
-        hlt
-        jmp short .hang
-
-%include "print.asm"
+%include "read_disk.asm"
 
 ; Messages
 msg_no_bios_ext: DB "No Disk Extensions!", 0
-msg_disk_error:  DB "Disk error!", 0
 
 TIMES 510 - ($ - $$) DB 0
 
