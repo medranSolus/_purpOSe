@@ -36,7 +36,7 @@ BPB: ; BIOS Parameter Block
     .description:            DB "_purpOSe" ; 8!!!
     .bytes_per_sector:       DW 512 ; 512, 1024, 2048 or 4096 but for 99,99% it's 512
     .sectors_per_cluster:    DB 1   ; 1, 2, 4, 8, 16 or 32 (128 not supported) NOTE: later for 512 * x -> bytes_per_sector >> 10 * sectors_per_cluster
-    .reserved_sectors_count: DW 1   ; Minimum 1 for vbr
+    .reserved_sectors_count: DW 2   ; Minimum 1 for vbr
     .fat_count:              DB 2
     .root_dir_entries_count: DW 512 ; 32 bytes per entry NOTE: Max 0x7A0 entries
     .sectors_count:          DW 0   ; If zero: number of sectors in volume lower
@@ -50,7 +50,7 @@ BPB: ; BIOS Parameter Block
     .reserved:               DB 0x00 ; Windows NT flags \_____ Current FAT sector in memory
     .signature:              DB 0x29 ;                  /
     .volume_id:              DD 0x00 ; Can be ignored, but used to track volumes
-    .volume_label:           DB "Pos Volume " ; 11!!!
+    .volume_label:           DB "PurpOSe    " ; 11!!!
     .file_system_id:         DB "FAT16   " ; 8!!! (Never trust it)
     .SIZE EQU $ - BPB ; = 59
 
@@ -169,15 +169,7 @@ _find_entry:
         test dh, [di + FatEntry.attrib]
         jz short .skip_entry
         .name_compare:
-            push si
-            push di
-            push cx
-            mov si, bp
-            mov cx, 11
-            repe cmpsb
-            pop cx
-            pop di
-            pop si
+        call _lfn_compare
         je short .found
         .skip_entry:
         add di, FatEntry.SIZE
@@ -187,6 +179,9 @@ _find_entry:
     mov si, msg_no_entry
     call _print
     mov si, bp
+    call _print_wide
+    mov si, bp
+    inc si
     jmp short _error
     .not_found:
     stc
@@ -308,6 +303,8 @@ _load_fat:
     call _read_disk
     ret
 
+%include "lfn_compare.asm"
+%include "print_wide.asm"
 ; Messages
 msg_no_entry:       DB "Entry not found: ", 0
 msg_loader_too_big: DB "Bootloader size exceeded 64KB!",0
@@ -316,8 +313,8 @@ msg_unknown_format: DB "Unknown bootloader file header!", 0
 msg_hello:          DB "Bootloader file in memory.", 0x0D, 0x0A, 0
 
 ; Location of bootloader
-dir_system: DB "PURPOSE    ", 0
-dir_boot:   DB "BOOT       ", 0
-file_boot:  DB "BOOTPOS COM", 0
+dir_system: DW 'P', 'u', 'r', 'p', 'o', 's', 'e', 0
+dir_boot:   DW 'B', 'o', 'o', 't', 0
+file_boot:  DW 'b', 'o', 'o', 't', 'p', 'o', 's', '.', 'C', 'O', 'M', 0
 
-TIMES 0x400 - ($ - $$) DB 0xDD
+TIMES 0x400 - ($ - $$) DB 0x90

@@ -19,7 +19,7 @@ _main:
     cmp al, 1
     je short .a20_enabled
     mov si, msg_no_a20
-    jmp short _error
+    jmp _error
     .a20_enabled:
     mov ax, BOOTLOADER_SGMT
     mov ds, ax
@@ -29,6 +29,7 @@ _main:
     mov si, msg_hello
     jmp short _error
 
+%include "lfn_compare.asm"
 %include "read_disk.asm"
 %include "enable_a20.asm"
 

@@ -56,11 +56,11 @@ clean:
 
 ###################### Architecture specyfic ######################
 
-$(SYSROOT_DIR)Purpose/purpose.ker: $(KER_OBJ) $(CRT_OBJ)
+$(SYSROOT_DIR)Purpose/poskernel.elf: $(KER_OBJ) $(CRT_OBJ)
 	$(LD) $(LD_FLAGS) $(OS_OBJ) -o $@
 
 $(SYSROOT_DIR)Purpose/Boot/bootpos.COM: $(BOOT_OBJ)
-	@cp $(BOOT_S2_OBJ) $@
+	@mv $(BOOT_S2_OBJ) $@
 
 ########### x86 ###########
 
@@ -68,9 +68,10 @@ $(SYSROOT_DIR)Purpose/Boot/bootpos.COM: $(BOOT_OBJ)
 ifeq ($(ARCH), x86)
 x86: dir_tree boot_x86 kernel_x86
 	@sudo ./utils/mkdisk_$(FS).sh x86
+	@$(RM) $(BOOT_OBJ_DIR)*.bin
 
 .PHONY: kernel_x86
-kernel_x86: acpica libk libc $(SYSROOT_DIR)Purpose/purpose.ker
+kernel_x86: acpica libk libc $(SYSROOT_DIR)Purpose/poskernel.elf
 
 .PHONY: boot_x86
 boot_x86: $(SYSROOT_DIR)Purpose/Boot/bootpos.COM

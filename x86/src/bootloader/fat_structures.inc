@@ -23,13 +23,13 @@ ENDSTRUC
 ; Long File Name entry (each character is 2 byte long).
 STRUC LfnEntry
     .index:    RESB 1
-    .string1:  RESB 10
+    .string1:  RESB 10 ; 5 chars
     .attrib:   RESB 1
     .reserved: RESB 1
     .checksum: RESB 1
-    .string2:  RESB 12
+    .string2:  RESB 12 ; 6 chars
     .zero:     RESB 2
-    .string3:  RESB 4
+    .string3:  RESB 4  ; 2 chars
     .SIZE:     RESB 0
 ENDSTRUC
 

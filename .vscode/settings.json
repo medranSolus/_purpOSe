@@ -1,6 +1,7 @@
 {
     "files.associations": {
-        "output.h": "c"
+        "output.h": "c",
+        "iosfwd": "cpp"
     },
     "doxdocgen.c.triggerSequence": "///",
     "doxdocgen.file.versionTag": "@version 0.0.1_a",
