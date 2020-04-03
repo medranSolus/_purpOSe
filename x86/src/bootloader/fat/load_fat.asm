@@ -15,11 +15,11 @@
 ; OUT: Void
 ; USES: EAX
 _load_fat:
-    mov DWORD [ds:si + DAP.sectors_count], (fat_buffer << 16) | 1
-    mov WORD [ds:si + DAP.buffer_sgmt], 0
+    mov DWORD [si + DAP.sectors_count], (fat_buffer << 16) | 1
+    mov WORD [si + DAP.buffer_sgmt], 0
     mov fat_header(loaded_fat), al
     add eax, fat_header(lba_fat)
-    mov [ds:si + DAP.start_lba_low], eax
+    mov [si + DAP.start_lba_low], eax
     call _read_disk
     ret
 

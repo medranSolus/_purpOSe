@@ -22,11 +22,10 @@
 | 0x00007C00 - 0x00007DFF [RAM]: Loaded VBR | 0x00000710 - 0x0000071F [RAM]: DAP packet             | 0x00000710 - 0x0000071F [RAM]: DAP packet             |
 | 0x00007C00 - 0x0007FFFF [RAM]: Free       | 0x00000720 - 0x0000072F [RAM]: FAT header             | 0x00000720 - 0x0000072F [RAM]: FAT header             |
 |                                           | 0x00000730 - 0x00000B2F [RAM]: VBR copy               | 0x00000730 - 0x00000B2F [RAM]: VBR copy               |
-|                                           | 0x00000B30 - 0x0000FFFF [RAM]: Free                   | 0x00000B30 - 0x0000FFFF [RAM]: Free                   |
+|                                           | 0x00000B30 - 0x0000FFFF [RAM]: Stack                  | 0x00000B30 - 0x0000FFFF [RAM]: Stack                  |
 |                                           | 0x00010000 - 0x0001FFFF [RAM]: Loaded bootloader      | 0x00010000 - 0x0001FFFF [RAM]: Bootloader             |
-|                                           | 0x00020000 - 0x0007FDFF [RAM]: Free                   | 0x00020000 - 0x0002FFFF [RAM]: Kernel buffer          |
-|                                           | 0x0007FE00 - 0x0007FFFF [RAM]: Stack                  | 0x00030000 - 0x0007FDFF [RAM]: Free                   |
-|                                           |                                                       | 0x0007FE00 - 0x0007FFFF [RAM]: Stack                  |
+|                                           | 0x00020000 - 0x0007FFFF [RAM]: Free                   | 0x00020000 - 0x0002FFFF [RAM]: Kernel buffer          |
+|                                           |                                                       | 0x00030000 - 0x0007FFFF [RAM]: Free                   |
 |--------------------- Preserved Memory --------------------
 | 0x00080000 - 0x0009FFFF [RAM]: Extended BIOS Data Area
 | 0x000A0000 - 0x000B7FFF [VRAM]: Graphic video memory

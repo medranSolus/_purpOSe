@@ -24,17 +24,17 @@ _load_entry:
     shl bx, 1
     mov bx, [fat_buffer + bx]
     movzx cx, BYTE fat_header(sectors_per_cluster)
-    mov [ds:si + DAP.sectors_count], cx
+    mov [si + DAP.sectors_count], cx
     dec al
     dec al
     mul cl
     add eax, fat_header(lba_data)
-    mov [ds:si + DAP.start_lba_low], eax
+    mov [si + DAP.start_lba_low], eax
     pop ax
     pop cx
     shl ecx, 16
     pop cx
-    mov [ds:si + DAP.buffer_offset], ecx
+    mov [si + DAP.buffer_offset], ecx
     push ax
     call _read_disk
     ret

@@ -19,5 +19,6 @@ STRUC MbrEntry
     .start_lba:      RESB 4
     .last_lba:       RESB 4
 ENDSTRUC
+partition_entry EQU 0x0700
 
 %endif ; __MBR_ENTRY_INC__
