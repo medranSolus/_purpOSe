@@ -1,5 +1,6 @@
 #!/bin/bash
 
-cd ./utils/quick_tools
-mkdir -p bin
-make all
+cd ./utils/quick_tools &&
+{
+    make all
+}
