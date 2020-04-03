@@ -1,4 +1,4 @@
-; File: print.asm
+; File: read_disk.asm
 ; Author: Marek Machliński
 ; Brief: Read data from disk.
 ;
@@ -21,6 +21,6 @@ _read_disk:
     .quit:
     ret
 
-msg_disk_error:  DB "Disk error!", 0
+msg_disk_error: DB "Disk error!", 0
 
 %endif ; __READ_DISK_ASM__

@@ -6,9 +6,8 @@
 ;
 %ifndef __LFN_COMPARE_ASM__
 %define __LFN_COMPARE_ASM__
-%include "fat_structures.inc"
+%include "fat/structures.inc"
 [BITS 16]
-MAX_LFN_ENTRIES EQU 20
 
 ; IN: DS:BP = Name pattern in unicode, ES:DI = Entry
 ; OUT: Equality flag set (ZF = 1) if found
@@ -62,6 +61,5 @@ _lfn_compare:
         loop .check_loop
     push bx
     ret
-
 
 %endif ; __LFN_COMPARE_ASM__

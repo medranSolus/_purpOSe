@@ -5,32 +5,25 @@
 ; Copyright (c) 2020
 ;
 [BITS 16]
-[ORG 0x0530]
+[ORG 0x0730]
 
 ; Bootloader path: Purpose\Boot\bootpos.COM
 _start:
     cld
     jmp short _relocate
 
-%include "fat_structures.inc"
 %include "mbr_entry.inc"
-%include "dap.inc"
+%include "fat/structures.inc"
 
 ; Constants
-BUFFER_DISK_SIZE EQU 0xF400 ; 122 x 512 sectors
-BOOTLOADER_SGMT  EQU 0x1000
+DISK_BUFFER_SGMT EQU 0x1000
 STACK_SGMT       EQU 0x7FE0
 STACK_TOP        EQU 0x0200
 
 ; Memory variables
-partition_entry EQU 0x0500
-dap_address     EQU 0x0510
-lba_data        EQU 0x0520
-lba_fat         EQU 0x0524
-loaded_fat      EQU 0x0528 ; 1B
-buffer_vbr_rest EQU 0x0730
-buffer_fat      EQU 0x0930
-buffer_disk     EQU 0x0A30
+partition_entry EQU 0x0700
+dap_address     EQU 0x0710
+buffer_vbr_rest EQU 0x0930
 
 BPB: ; BIOS Parameter Block
     .description:            DB "_purpOSe" ; 8!!!
@@ -56,6 +49,7 @@ BPB: ; BIOS Parameter Block
 
 %define bpb_var(reg, var) [reg + BPB.%+var - BPB]
 
+; IN: DS:SI = Active partition address, DL = Drive number
 _relocate:
     cli
     xor ax, ax
@@ -66,20 +60,23 @@ _relocate:
     mov ss, sp
     mov sp, STACK_TOP
     .partition_entry:
-        mov cx, 8
+        mov cx, 4
         mov di, partition_entry
-        rep movsw
+        rep movsd
     .vbr:
         mov ds, ax
-        mov cx, 0x0100  ; Size of VBR in WORD's
+        mov cx, 0x0080  ; Size of VBR in DWORD's
         mov si, 0x7C00  ; Bootsector address
         mov di, $$      ; New address
-        rep movsw
+        rep movsd
     mov si, BPB
     mov bpb_var(si, drive_number), dl
     sti
+    mov ax, DISK_BUFFER_SGMT
+    mov es, ax
     jmp 0:_locate_bootloader
 
+; IN: DS:SI = Active partition address, DL = Drive number
 _locate_bootloader:
     .check_bios_ext:
         mov ah, 0x41
@@ -98,7 +95,7 @@ _locate_bootloader:
         movzx ebx, WORD bpb_var(si, reserved_sectors_count)
         shl ebx, cl
         add ebx, [partition_entry + MbrEntry.start_lba]
-        mov [lba_fat], ebx
+        mov fat_header(lba_fat), ebx
         movzx ax, BYTE bpb_var(si, fat_count)
         shl ax, cl
         mul WORD bpb_var(si, sectors_per_fat)
@@ -114,18 +111,23 @@ _locate_bootloader:
         shr dx, 4
         shl edx, cl
         shl BYTE bpb_var(si, sectors_per_cluster), cl
+        movzx cx, BYTE bpb_var(si, sectors_per_cluster)
+        mov fat_header(sectors_per_cluster), cl
+        shl cx, 4
+        mov fat_header(dir_entry_count), cx
         mov si, dap_address
         mov [si + DAP.sectors_count], dx
         mov [si + DAP.start_lba_low], ebx
         mov WORD [si + DAP.dap_size], DAP.SIZE
         mov DWORD [si + DAP.start_lba_high], 0
-        mov DWORD [si + DAP.buffer_offset], buffer_disk
+        mov DWORD [si + DAP.buffer_offset], DISK_BUFFER_SGMT << 16
         add ebx, edx
-        mov [lba_data], ebx
+        mov fat_header(lba_data), ebx
         mov dl, [BPB.drive_number]
         call _read_disk
     .load_rest_of_vbr:
         mov DWORD [si + DAP.sectors_count], (buffer_vbr_rest << 16) | 1
+        mov WORD [si + DAP.buffer_sgmt], 0
         mov eax, [partition_entry + MbrEntry.start_lba]
         inc eax
         mov DWORD [si + DAP.start_lba_low], eax
@@ -134,14 +136,17 @@ _locate_bootloader:
         mov bp, dir_system
         mov dh, DIR_ATTRIB.SUB_DIR
         mov bx, 0xFFFF
+        mov cx, [BPB.root_dir_entries_count]
+        xor di, di
         call _find_entry
+        mov fat_header(sys_dir_cluster), bx
         movzx eax, bh
         call _load_fat
         call _load_entry_buffer_disk
     .load_boot_dir:
         mov bp, dir_boot
         .check_sys_dir_cluster:
-            call _find_entry
+            call _find_subdir_entry
             xor di, di
             adc di, 0
             call _load_entry_buffer_disk
@@ -151,80 +156,18 @@ _locate_bootloader:
         mov bp, file_boot
         xor dh, dh
         .check_boot_dir_cluster:
-            call _find_entry
+            call _find_subdir_entry
             jnc _load_bootloader
             call _load_entry_buffer_disk
             jmp short .check_boot_dir_cluster
 
-; Finds entry inside directory in buffer_disk
-; IN: DS:BP = Entry name, DH = Entry attributes (0 for skip), BX = Directory next cluster entry
-; OUT: ES:DI = Entry, BX = Entry cluster, Carry set if not found
-; USES: CX, DI
-_find_entry:
-    mov cx, [BPB.root_dir_entries_count]
-    mov di, buffer_disk
-    .check_entries:
-        cmp dh, 0
-        je short .name_compare
-        test dh, [di + FatEntry.attrib]
-        jz short .skip_entry
-        .name_compare:
-        call _lfn_compare
-        je short .found
-        .skip_entry:
-        add di, FatEntry.SIZE
-        loop .check_entries
-    cmp bx, 0xFFFF
-    jne short .not_found
-    mov si, msg_no_entry
-    call _print
-    mov si, bp
-    call _print_wide
-    mov si, bp
-    inc si
-    jmp short _error
-    .not_found:
-    stc
-    jmp short .quit
-    .found:
-    mov bx, WORD [di + FatEntry.start_cluster]
-    clc
-    .quit:
-    ret
-
-; Load selected entry into buffer
-; IN: DS:SI = DAP address, DL = Drive number, BX = Entry cluster, SS:SP+2 = Buffer segment, SS:SP+4 = Buffer address
-; OUT: BX = Entry next cluster
-; USES: EAX(_load_fat), ECX
-_load_entry:
-    cmp bh, [loaded_fat]
-    je short .current_fat
-    movzx eax, bh
-    call _load_fat
-    .current_fat:
-    movzx eax, bl
-    shl bx, 1
-    mov bx, [buffer_fat + bx]
-    movzx cx, BYTE [BPB.sectors_per_cluster]
-    mov [si + DAP.sectors_count], cx
-    dec al
-    dec al
-    mul cl
-    add eax, [lba_data]
-    mov [si + DAP.start_lba_low], eax
-    pop ax
-    pop cx
-    shl ecx, 16
-    pop cx
-    mov [si + DAP.buffer_offset], ecx
-    push ax
-    call _read_disk
-    ret
-
 %include "read_disk.asm"
 
 ; Messages
-msg_no_bios_ext: DB "No Disk Extensions!", 0
+msg_no_bios_ext:    DB "No Disk Extensions!", 0
+msg_loader_too_big: DB "Bootloader size exceed 64KB!",0
+msg_entry_corrupt:  DB "Bootloader entry corrupted!", 0
+msg_unknown_format: DB "Unknown bootloader header!", 0
 
 TIMES 510 - ($ - $$) DB 0
 
@@ -235,7 +178,7 @@ _load_bootloader:
     movzx ecx, BYTE [BPB.sectors_per_cluster]
     shl ecx, 9
     dec ecx
-    mov eax, [di + FatEntry.file_size]
+    mov eax, [es:di + FatEntry.file_size]
     test eax, ecx
     jz short .file_size_even
     add eax, ecx
@@ -245,7 +188,7 @@ _load_bootloader:
     cmp eax, 0x10000
     jbe short .smaller_than_64K
     mov si, msg_loader_too_big
-    jmp short _error
+    jmp _error
     .smaller_than_64K:
     shr ax, 9
     push ax
@@ -253,7 +196,7 @@ _load_bootloader:
     .read_entries:
         push ax
         push ax
-        push BOOTLOADER_SGMT
+        push DISK_BUFFER_SGMT
         call _load_entry
         pop ax
         add ax, [si + DAP.sectors_count]
@@ -270,7 +213,7 @@ _load_bootloader:
     mov si, msg_entry_corrupt
     jmp _error
     .loaded_correctly:
-    mov ax, BOOTLOADER_SGMT
+    mov ax, DISK_BUFFER_SGMT
     mov ds, ax
     cmp DWORD [ds:0], 0x4D4F43C3 ; Bootloader magic number
     je short .correct_header
@@ -279,38 +222,30 @@ _load_bootloader:
     mov si, msg_unknown_format
     jmp _error
     .correct_header:
-    jmp BOOTLOADER_SGMT:0x4
+    jmp DISK_BUFFER_SGMT:0x4
 
-; Load entry inside directory into buffer_disk
+; Find specified entry in subdirectory inside disk buffer.
+; IN: DS:BP = Entry name, DH = Entry attributes (0 for skip), BX = Directory next cluster entry
+; OUT: ES:DI = Entry, BX = Entry cluster, Carry set if not found
+; USES: CX, DI
+_find_subdir_entry:
+    mov cx, fat_header(dir_entry_count)
+    xor di, di
+    jmp short _find_entry
+
+; Load entry inside directory into disk buffer.
 ; IN: DS:SI = DAP address, DL = Drive number, BX = Entry cluster
 ; OUT: BX = Entry next cluster
 ; USES: EAX(_load_entry), CX(_load_entry)
 _load_entry_buffer_disk:
-    push buffer_disk
     push 0
+    push DISK_BUFFER_SGMT
     call _load_entry
     ret
 
-; Load selected FAT sector
-; IN: DS:SI = DAP address, DL = Drive number, EAX = FAT sector number
-; OUT: Void
-; USES: EAX
-_load_fat:
-    mov DWORD [si + DAP.sectors_count], (buffer_fat << 16) | 1
-    mov [loaded_fat], al
-    add eax, [lba_fat]
-    mov [si + DAP.start_lba_low], eax
-    call _read_disk
-    ret
-
-%include "lfn_compare.asm"
-%include "print_wide.asm"
-; Messages
-msg_no_entry:       DB "Entry not found: ", 0
-msg_loader_too_big: DB "Bootloader size exceeded 64KB!",0
-msg_entry_corrupt:  DB "Bootloader entry corrupted!", 0
-msg_unknown_format: DB "Unknown bootloader file header!", 0
-msg_hello:          DB "Bootloader file in memory.", 0x0D, 0x0A, 0
+%include "fat/find_entry.asm"
+%include "fat/load_fat.asm"
+%include "fat/load_entry.asm"
 
 ; Location of bootloader
 dir_system: DW 'P', 'u', 'r', 'p', 'o', 's', 'e', 0

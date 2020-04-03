@@ -7,6 +7,21 @@
 %ifndef __FAT_STRUCTURES_INC__
 %define __FAT_STRUCTURES_INC__
 
+; Useful data about current FAT
+STRUC FatHeader
+    .lba_fat:             RESB 4
+    .lba_data:            RESB 4
+    .sys_dir_cluster:     RESB 2
+    .dir_entry_count:     RESB 2
+    .sectors_per_cluster: RESB 1
+    .loaded_fat:          RESB 1
+    .padding:             RESB 2
+    .SIZE:                RESB 0
+ENDSTRUC
+fat_header_address EQU 0x0720
+fat_buffer         EQU 0x0500
+%define fat_header(var) [fat_header_address + FatHeader.%+var]
+
 ; Directory entry.
 STRUC FatEntry
     .filename:      RESB 8

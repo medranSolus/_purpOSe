@@ -29,10 +29,10 @@ _enable_a20:
         je short .enabled
     .keyboard_controller:
         cli
-        call _keyboard_a20_wait
+        call .keyboard_a20_wait
         mov al, 0xAD
         out 0x64, al
-        call _keyboard_a20_wait
+        call .keyboard_a20_wait
         mov al, 0xD0
         out 0x64, al
         .keyboard_wait:
@@ -41,17 +41,17 @@ _enable_a20:
             jz short .keyboard_wait
         in al, 0x60
         push ax
-        call _keyboard_a20_wait
+        call .keyboard_a20_wait
         mov al, 0xD1
         out 0x64, al
-        call _keyboard_a20_wait
+        call .keyboard_a20_wait
         pop ax
         or al, 2
         out 0x60, al 
-        call _keyboard_a20_wait
+        call .keyboard_a20_wait
         mov al, 0xAE
         out 0x64, al
-        call _keyboard_a20_wait
+        call .keyboard_a20_wait
         sti
         mov cx, RETRIES_COUNT
         .keyboard_try:
@@ -87,10 +87,10 @@ _enable_a20:
     .quit:
     ret
 
-_keyboard_a20_wait:
+.keyboard_a20_wait:
     in al, 0x64
     test al, 2
-    jnz short _keyboard_a20_wait
+    jnz short .keyboard_a20_wait
     ret
 
 %endif ; __ENABLE_A20_ASM__

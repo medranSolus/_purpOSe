@@ -17,16 +17,16 @@
 |     0x0482 [2  byte]: Keyboard buffer end
 |     0x0497 [1  byte]: Last keyboard LED/Shift key state
 |---------------- MBR Image ----------------|---------------------- VBR Image ----------------------|------------------- Bootloader Image ------------------|------------------ Kernel Image ------------------
-| 0x00000500 - 0x000079FF [RAM]: Free       | 0x00000500 - 0x0000050F [RAM]: Active partition entry | 0x00000500 - 0x0000050F [RAM]: Active partition entry |
-| 0x00007A00 - 0x00007BFF [RAM]: MBR copy   | 0x00000510 - 0x0000051F [RAM]: DAP packet             | 0x00000510 - 0x0000051F [RAM]: DAP packet             |
-| 0x00007C00 - 0x00007DFF [RAM]: Loaded VBR | 0x00000520 - 0x0000052F [RAM]: VBR variables          | 0x00000520 - 0x0000052F [RAM]: VBR variables          |
-| 0x00007C00 - 0x0007FFFF [RAM]: Free       | 0x00000530 - 0x0000092F [RAM]: Copied VBR             | 0x00000530 - 0x0000092F [RAM]: VBR                    |
-|                                           | 0x00000930 - 0x00000A2F [RAM]: FAT buffer             | 0x00000930 - 0x00000A2F [RAM]: FAT buffer             |
-|                                           | 0x00000A30 - 0x0000FF2F [RAM]: Disk buffer            | 0x00000A30 - 0x0000FF2F [RAM]: Disk buffer            |
-|                                           | 0x0000FF30 - 0x0000FFFF [RAM]: Free                   | 0x0000FF30 - 0x0000FFFF [RAM]: Free                   |
+| 0x00000500 - 0x000079FF [RAM]: Free       | 0x00000500 - 0x000006FF [RAM]: FAT buffer             | 0x00000500 - 0x000006FF [RAM]: FAT buffer             |
+| 0x00007A00 - 0x00007BFF [RAM]: MBR copy   | 0x00000700 - 0x0000070F [RAM]: Active partition entry | 0x00000700 - 0x0000070F [RAM]: Active partition entry |
+| 0x00007C00 - 0x00007DFF [RAM]: Loaded VBR | 0x00000710 - 0x0000071F [RAM]: DAP packet             | 0x00000710 - 0x0000071F [RAM]: DAP packet             |
+| 0x00007C00 - 0x0007FFFF [RAM]: Free       | 0x00000720 - 0x0000072F [RAM]: FAT header             | 0x00000720 - 0x0000072F [RAM]: FAT header             |
+|                                           | 0x00000730 - 0x00000B2F [RAM]: VBR copy               | 0x00000730 - 0x00000B2F [RAM]: VBR copy               |
+|                                           | 0x00000B30 - 0x0000FFFF [RAM]: Free                   | 0x00000B30 - 0x0000FFFF [RAM]: Free                   |
 |                                           | 0x00010000 - 0x0001FFFF [RAM]: Loaded bootloader      | 0x00010000 - 0x0001FFFF [RAM]: Bootloader             |
-|                                           | 0x00020000 - 0x0007FDFF [RAM]: Free                   | 0x00020000 - 0x0007FDFF [RAM]: Free                   |
-|                                           | 0x0007FE00 - 0x0007FFFF [RAM]: Stack                  | 0x0007FE00 - 0x0007FFFF [RAM]: Stack                  |
+|                                           | 0x00020000 - 0x0007FDFF [RAM]: Free                   | 0x00020000 - 0x0002FFFF [RAM]: Kernel buffer          |
+|                                           | 0x0007FE00 - 0x0007FFFF [RAM]: Stack                  | 0x00030000 - 0x0007FDFF [RAM]: Free                   |
+|                                           |                                                       | 0x0007FE00 - 0x0007FFFF [RAM]: Stack                  |
 |--------------------- Preserved Memory --------------------
 | 0x00080000 - 0x0009FFFF [RAM]: Extended BIOS Data Area
 | 0x000A0000 - 0x000B7FFF [VRAM]: Graphic video memory
