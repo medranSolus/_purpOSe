@@ -11,14 +11,18 @@
 
 ; IN: DS:SI = DAP address, DL = Drive number
 ; OUT: Void
-; USES: AH
+; USES: AX
 _read_disk:
+    push ds
+    mov ax, fs
+    mov ds, ax
     mov ah, 0x42
     int 0x13
     jnc short .quit
     mov si, msg_disk_error
     jmp short _error
     .quit:
+    pop ds
     ret
 
 msg_disk_error: DB "Disk error!", 0

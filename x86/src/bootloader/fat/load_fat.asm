@@ -11,15 +11,15 @@
 %include "read_disk.asm"
 [BITS 16]
 
-; IN: DS:SI = DAP address, DL = Drive number, EAX = FAT sector number
+; IN: FS:SI = DAP address, DL = Drive number, EAX = FAT sector number
 ; OUT: Void
 ; USES: EAX
 _load_fat:
-    mov DWORD [si + DAP.sectors_count], (fat_buffer << 16) | 1
-    mov WORD [si + DAP.buffer_sgmt], 0
+    mov DWORD [fs:si + DAP.sectors_count], (fat_buffer << 16) | 1
+    mov WORD [fs:si + DAP.buffer_sgmt], 0
     mov fat_header(loaded_fat), al
     add eax, fat_header(lba_fat)
-    mov [si + DAP.start_lba_low], eax
+    mov [fs:si + DAP.start_lba_low], eax
     call _read_disk
     ret
 

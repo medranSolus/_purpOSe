@@ -20,7 +20,6 @@ STRUC FatHeader
 ENDSTRUC
 fat_header_address EQU 0x0720
 fat_buffer         EQU 0x0500
-%define fat_header(var) [fat_header_address + FatHeader.%+var]
 
 ; Directory entry.
 STRUC FatEntry

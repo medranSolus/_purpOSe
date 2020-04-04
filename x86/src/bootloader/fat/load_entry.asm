@@ -10,10 +10,10 @@
 [BITS 16]
 
 ; __stdcall (No stack cleanup)
-; IN: DS:SI = DAP address, DL = Drive number, BX = Entry cluster,
+; IN: FS:SI = DAP address, DL = Drive number, BX = Entry cluster,
 ;     SS:SP+2 = Buffer segment, SS:SP+4 = Buffer address
 ; OUT: BX = Entry next cluster
-; USES: EAX(_load_fat), ECX
+; USES: EAX, ECX
 _load_entry:
     cmp bh, fat_header(loaded_fat)
     je short .current_fat
@@ -22,19 +22,19 @@ _load_entry:
     .current_fat:
     movzx eax, bl
     shl bx, 1
-    mov bx, [fat_buffer + bx]
+    mov bx, [fs:fat_buffer + bx]
     movzx cx, BYTE fat_header(sectors_per_cluster)
-    mov [si + DAP.sectors_count], cx
+    mov [fs:si + DAP.sectors_count], cx
     dec al
     dec al
     mul cl
     add eax, fat_header(lba_data)
-    mov [si + DAP.start_lba_low], eax
+    mov [fs:si + DAP.start_lba_low], eax
     pop ax
     pop cx
     shl ecx, 16
     pop cx
-    mov [si + DAP.buffer_offset], ecx
+    mov [fs:si + DAP.buffer_offset], ecx
     push ax
     call _read_disk
     ret

@@ -45,6 +45,7 @@ BPB: ; BIOS Parameter Block
     .SIZE EQU $ - BPB ; = 59
 
 %define bpb_var(reg, var) [reg + BPB.%+var - BPB]
+%define fat_header(var) [fat_header_address + FatHeader.%+var]
 
 ; IN: DS:SI = Active partition address, DL = Drive number
 _relocate:
@@ -144,7 +145,7 @@ _locate_bootloader:
         mov bp, dir_boot
         .check_sys_dir_cluster:
             call _find_subdir_entry
-            xor di, di
+            mov di, 0
             adc di, 0
             call _load_entry_buffer_disk
             cmp di, 0
@@ -158,13 +159,20 @@ _locate_bootloader:
             call _load_entry_buffer_disk
             jmp short .check_boot_dir_cluster
 
-%include "read_disk.asm"
+; Load entry inside directory into disk buffer.
+; IN: DS:SI = DAP address, DL = Drive number, BX = Entry cluster
+; OUT: BX = Entry next cluster
+; USES: EAX(_load_entry), ECX(_load_entry)
+_load_entry_buffer_disk:
+    push 0
+    push DISK_BUFFER_SGMT
+    call _load_entry
+    ret
 
-; Messages
-msg_no_bios_ext:    DB "No Disk Extensions!", 0
-msg_loader_too_big: DB "Bootloader size exceed 64KB!",0
-msg_entry_corrupt:  DB "Bootloader entry corrupted!", 0
-msg_unknown_format: DB "Unknown bootloader header!", 0
+%include "fat/load_fat.asm"
+
+; Message
+msg_no_bios_ext: DB "No Disk Extensions!", 0
 
 TIMES 510 - ($ - $$) DB 0
 
@@ -230,19 +238,13 @@ _find_subdir_entry:
     xor di, di
     jmp short _find_entry
 
-; Load entry inside directory into disk buffer.
-; IN: DS:SI = DAP address, DL = Drive number, BX = Entry cluster
-; OUT: BX = Entry next cluster
-; USES: EAX(_load_entry), CX(_load_entry)
-_load_entry_buffer_disk:
-    push 0
-    push DISK_BUFFER_SGMT
-    call _load_entry
-    ret
-
 %include "fat/find_entry.asm"
-%include "fat/load_fat.asm"
 %include "fat/load_entry.asm"
+
+; Messages
+msg_loader_too_big: DB "Bootloader size exceed 64KB!",0
+msg_entry_corrupt:  DB "Bootloader entry corrupted!", 0
+msg_unknown_format: DB "Unknown bootloader header!", 0
 
 ; Location of bootloader
 dir_system: DW 'P', 'u', 'r', 'p', 'o', 's', 'e', 0

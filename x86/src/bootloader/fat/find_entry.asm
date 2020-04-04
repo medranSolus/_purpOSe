@@ -29,13 +29,14 @@ _find_entry:
         loop .check_entries
     cmp bx, 0xFFFF
     jne short .not_found
-    mov si, msg_no_entry
-    call _print
-    mov si, bp
-    call _print_wide
-    mov si, bp
-    inc si
-    jmp _error
+    .no_more_dir_clusters:
+        mov si, msg_no_entry
+        call _print
+        mov si, bp
+        call _print_wide
+        mov si, bp
+        inc si
+        jmp _error
     .not_found:
     stc
     jmp short .quit
