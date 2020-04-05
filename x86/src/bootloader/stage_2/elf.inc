@@ -19,8 +19,8 @@ STRUC Elf32Header
     .arch_type:                 RESB 2
     .elf_version:               RESB 4
     .program_entry:             RESB 4
-    .program_header_table:      RESB 4
-    .section_header_table:      RESB 4
+    .program_header_table:      RESB 4 ; 0 if none
+    .section_header_table:      RESB 4 ; 0 if none
     .flags:                     RESB 4
     .header_size:               RESB 2
     .program_header_entry_size: RESB 2
@@ -63,7 +63,7 @@ ELF_MAGIC_NUMBER EQU 0x464C457F
 ; ELF32 program header entry.
 STRUC Elf32ProgramEntry
     .segment_type:      RESB 4
-    .offset_data:       RESB 4
+    .file_offset:       RESB 4
     .virtual_addr:      RESB 4
     .undefined:         RESB 4
     .segment_file_size: RESB 4
@@ -75,7 +75,7 @@ ENDSTRUC
 
 ELF_SEGMENT:
     .NULL    EQU 0 ; Ignore entry
-    .LOAD    EQU 1 ; Clear mem_size bytes at virtual_addr to 0, then copy file_size bytes from offset_data to virtual_addr
+    .LOAD    EQU 1 ; Clear mem_size bytes at virtual_addr to 0, then copy file_size bytes from file_offset to virtual_addr
     .DYNAMIC EQU 2 ; Dynamic linking required
     .INTERP  EQU 3 ; Contains a file path to an executable to use as an interpreter for the following segment
     .NOTE    EQU 4 ; Arch/env specyfic info

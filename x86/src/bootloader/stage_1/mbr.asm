@@ -7,6 +7,8 @@
 [BITS 16]
 [ORG 0x7A00]
 
+BOOT_SECTOR EQU 0x7C00
+
 _relocate:
     cli
     xor ax, ax
@@ -16,10 +18,10 @@ _relocate:
     shr ax, 4
     mov ss, ax
     mov sp, STACK_SIZE  ; Stack just before partition table
-    mov cx, 0x0100      ; Size of MBR in WORD's
-    mov si, 0x7C00      ; Bootsector address
-    mov di, 0x7A00      ; New address
-    rep movsw
+    mov cx, 0x0080      ; Size of MBR in DWORD's
+    mov si, BOOT_SECTOR ; Bootsector address
+    mov di, $$          ; New address
+    rep movsd
     jmp 0:_load_vbr
 
 %include "print.asm"
@@ -60,7 +62,7 @@ _load_vbr:
     mov si, msg_disk_error
     jmp short _error
     .vbr_loaded:
-    jmp 0:0x7C00
+    jmp 0:BOOT_SECTOR
 
 ; Handle unrecoverable boot error
 ; IN: SI = Pointer to error message

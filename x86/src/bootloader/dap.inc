@@ -18,6 +18,6 @@ STRUC DAP
     .start_lba_high: RESB 4 ; Upper 16 bit of 48 bit LBA value
     .SIZE:           RESB 0
 ENDSTRUC
-dap_address EQU 0x0710
+dap_addr EQU 0x0710
 
 %endif ; __DAP_INC__

@@ -1,11 +1,11 @@
-; File: fat_structures.inc
+; File: structures.inc
 ; Author: Marek Machliński
 ; Brief: FAT structures necessary to decode filesystem data.
 ;
 ; Copyright (c) 2020
 ;
-%ifndef __FAT_STRUCTURES_INC__
-%define __FAT_STRUCTURES_INC__
+%ifndef __STRUCTURES_INC__
+%define __STRUCTURES_INC__
 
 ; Useful data about current FAT
 STRUC FatHeader
@@ -18,8 +18,8 @@ STRUC FatHeader
     .padding:             RESB 2
     .SIZE:                RESB 0
 ENDSTRUC
-fat_header_address EQU 0x0720
-fat_buffer         EQU 0x0500
+fat_header_addr EQU 0x0720
+fat_buffer      EQU 0x0500
 
 ; Directory entry.
 STRUC FatEntry
@@ -57,4 +57,4 @@ DIR_ATTRIB:
     .ARCHIVE      EQU 0010_0000b
     .LFN          EQU 0000_1111b
 
-%endif ; __FAT_STRUCTURES_INC__
+%endif ; __STRUCTURES_INC__

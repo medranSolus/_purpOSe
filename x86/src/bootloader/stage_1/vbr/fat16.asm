@@ -45,7 +45,7 @@ BPB: ; BIOS Parameter Block
     .SIZE EQU $ - BPB ; = 59
 
 %define bpb_var(reg, var) [reg + BPB.%+var - BPB]
-%define fat_header(var) [fat_header_address + FatHeader.%+var]
+%define fat_header(var) [fat_header_addr + FatHeader.%+var]
 
 ; IN: DS:SI = Active partition address, DL = Drive number
 _relocate:
@@ -113,7 +113,7 @@ _locate_bootloader:
         mov fat_header(sectors_per_cluster), cl
         shl cx, 4
         mov fat_header(dir_entry_count), cx
-        mov si, dap_address
+        mov si, dap_addr
         mov [si + DAP.sectors_count], dx
         mov [si + DAP.start_lba_low], ebx
         mov WORD [si + DAP.dap_size], DAP.SIZE
@@ -140,14 +140,14 @@ _locate_bootloader:
         mov fat_header(sys_dir_cluster), bx
         movzx eax, bh
         call _load_fat
-        call _load_entry_buffer_disk
+        call _load_entry_disk_buffer
     .load_boot_dir:
         mov bp, dir_boot
         .check_sys_dir_cluster:
             call _find_subdir_entry
             mov di, 0
             adc di, 0
-            call _load_entry_buffer_disk
+            call _load_entry_disk_buffer
             cmp di, 0
             jne short .check_sys_dir_cluster
     .find_bootloader:
@@ -156,14 +156,14 @@ _locate_bootloader:
         .check_boot_dir_cluster:
             call _find_subdir_entry
             jnc _load_bootloader
-            call _load_entry_buffer_disk
+            call _load_entry_disk_buffer
             jmp short .check_boot_dir_cluster
 
 ; Load entry inside directory into disk buffer.
 ; IN: DS:SI = DAP address, DL = Drive number, BX = Entry cluster
 ; OUT: BX = Entry next cluster
 ; USES: EAX(_load_entry), ECX(_load_entry)
-_load_entry_buffer_disk:
+_load_entry_disk_buffer:
     push 0
     push DISK_BUFFER_SGMT
     call _load_entry
