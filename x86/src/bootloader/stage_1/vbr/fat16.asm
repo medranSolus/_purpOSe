@@ -25,7 +25,7 @@ buffer_vbr_rest  EQU 0x0930
 BPB: ; BIOS Parameter Block
     .description:            DB "_purpOSe" ; 8!!!
     .bytes_per_sector:       DW 512 ; 512, 1024, 2048 or 4096 (but for 99,99% it's 512) NOTE: Max sectors_per_cluster for bytes_per_sector below
-    .sectors_per_cluster:    DB 1   ; 128,       32,     16, 8, 4, 2, 1 NOTE: later for 512 * x -> bytes_per_sector >> 10 * sectors_per_cluster
+    .sectors_per_cluster:    DB 1   ;        32,   16,      8, 4, 2, 1 NOTE: later for 512 * x -> bytes_per_sector >> 10 * sectors_per_cluster
     .reserved_sectors_count: DW 2   ; Minimum 1 for vbr
     .fat_count:              DB 2
     .root_dir_entries_count: DW 512 ; 32 bytes per entry NOTE: Max 0x7A0 entries
