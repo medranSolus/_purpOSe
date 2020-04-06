@@ -17,8 +17,8 @@
 _load_fat:
     mov DWORD [fs:si + DAP.sectors_count], (fat_buffer << 16) | 1
     mov WORD [fs:si + DAP.buffer_sgmt], 0
-    mov fat_header(loaded_fat), al
-    add eax, fat_header(lba_fat)
+    mov FAT_HEADER(loaded_fat), al
+    add eax, FAT_HEADER(lba_fat)
     mov [fs:si + DAP.start_lba_low], eax
     call _read_disk
     ret

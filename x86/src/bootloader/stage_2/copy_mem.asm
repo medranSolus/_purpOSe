@@ -1,35 +1,35 @@
-; File: zero_mem.asm
+; File: copy_mem.asm
 ; Author: Marek Machliński
-; Brief: Zero memory in protected mode.
+; Brief: Copy memory in protected mode.
 ;
 ; Copyright (c) 2020
 ;
-%ifndef __ZERO_MEM_ASM__
-%define __ZERO_MEM_ASM__
+%ifndef __COPY_MEM_ASM__
+%define __COPY_MEM_ASM__
 %include "protected_mode.inc"
 [BITS 16]
 
-; IN: EDI = Memory address, ECX = Size in bytes
+; IN: ESI = Source inside kernel buffer, EDI = Destination, ECX = Size in bytes
 ; OUT: Void
 ; USES: EAX, BL
-_zero_mem:
+_copy_mem:
     ENTER_32BIT
+    add esi, KERNEL_SGMT << 4
     xor bl, bl
     shr ecx, 1
     rcl bl, 1
     shr ecx, 1
     rcl bl, 1
-    xor eax, eax
-    rep stosd
+    rep movsd
     test bl, 1
     je short .no_word_remainder
-    stosw
+    movsw
     .no_word_remainder:
     test bl, 2
     je short .no_byte_remainder
-    stosb
+    movsb
     .no_byte_remainder:
     LEAVE_32BIT
     ret
 
-%endif ; __ZERO_MEM_ASM__
+%endif ; __COPY_MEM_ASM__

@@ -44,8 +44,8 @@ BPB: ; BIOS Parameter Block
     .file_system_id:         DB "FAT16   " ; 8!!! (Never trust it)
     .SIZE EQU $ - BPB ; = 59
 
-%define bpb_var(reg, var) [reg + BPB.%+var - BPB]
-%define fat_header(var) [fat_header_addr + FatHeader.%+var]
+%define BPB_VAR(reg, var) [reg + BPB.%+var - BPB]
+%define FAT_HEADER(var) [fat_header_addr + FatHeader.%+var]
 
 ; IN: DS:SI = Active partition address, DL = Drive number
 _relocate:
@@ -68,7 +68,7 @@ _relocate:
         mov di, $$      ; New address
         rep movsd
     mov si, BPB
-    mov bpb_var(si, drive_number), dl
+    mov BPB_VAR(si, drive_number), dl
     sti
     mov ax, DISK_BUFFER_SGMT
     mov es, ax
@@ -84,23 +84,23 @@ _locate_bootloader:
         mov si, msg_no_bios_ext
         jmp _error
     .load_root_dir:
-        mov cx, bpb_var(si, bytes_per_sector)
+        mov cx, BPB_VAR(si, bytes_per_sector)
         shr cx, 10
         cmp cl, 0
         jz short .no_decrement
         dec cl
         .no_decrement:
-        movzx ebx, WORD bpb_var(si, reserved_sectors_count)
+        movzx ebx, WORD BPB_VAR(si, reserved_sectors_count)
         shl ebx, cl
         add ebx, [partition_entry + MbrEntry.start_lba]
-        mov fat_header(lba_fat), ebx
-        movzx ax, BYTE bpb_var(si, fat_count)
+        mov FAT_HEADER(lba_fat), ebx
+        movzx ax, BYTE BPB_VAR(si, fat_count)
         shl ax, cl
-        mul WORD bpb_var(si, sectors_per_fat)
+        mul WORD BPB_VAR(si, sectors_per_fat)
         shl edx, 16
         mov dx, ax
         add ebx, edx
-        movzx edx, WORD bpb_var(si, root_dir_entries_count)
+        movzx edx, WORD BPB_VAR(si, root_dir_entries_count)
         test dl, 0x0F
         jz short .root_dir_entries_even
         and dl, 0xF0
@@ -108,11 +108,11 @@ _locate_bootloader:
         .root_dir_entries_even:
         shr dx, 4
         shl edx, cl
-        shl BYTE bpb_var(si, sectors_per_cluster), cl
-        movzx cx, BYTE bpb_var(si, sectors_per_cluster)
-        mov fat_header(sectors_per_cluster), cl
+        shl BYTE BPB_VAR(si, sectors_per_cluster), cl
+        movzx cx, BYTE BPB_VAR(si, sectors_per_cluster)
+        mov FAT_HEADER(sectors_per_cluster), cl
         shl cx, 4
-        mov fat_header(dir_entry_count), cx
+        mov FAT_HEADER(dir_entry_count), cx
         mov si, dap_addr
         mov [si + DAP.sectors_count], dx
         mov [si + DAP.start_lba_low], ebx
@@ -120,7 +120,7 @@ _locate_bootloader:
         mov DWORD [si + DAP.start_lba_high], 0
         mov DWORD [si + DAP.buffer_offset], DISK_BUFFER_SGMT << 16
         add ebx, edx
-        mov fat_header(lba_data), ebx
+        mov FAT_HEADER(lba_data), ebx
         mov dl, [BPB.drive_number]
         call _read_disk
     .load_rest_of_vbr:
@@ -137,7 +137,7 @@ _locate_bootloader:
         mov cx, [BPB.root_dir_entries_count]
         xor di, di
         call _find_entry
-        mov fat_header(sys_dir_cluster), bx
+        mov FAT_HEADER(sys_dir_cluster), bx
         movzx eax, bh
         call _load_fat
         call _load_entry_disk_buffer
@@ -234,7 +234,7 @@ _load_bootloader:
 ; OUT: ES:DI = Entry, BX = Entry cluster, Carry set if not found
 ; USES: CX, DI
 _find_subdir_entry:
-    mov cx, fat_header(dir_entry_count)
+    mov cx, FAT_HEADER(dir_entry_count)
     xor di, di
     jmp short _find_entry
 

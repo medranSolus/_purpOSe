@@ -15,7 +15,7 @@
 ; OUT: BX = Entry next cluster
 ; USES: EAX, ECX
 _load_entry:
-    cmp bh, fat_header(loaded_fat)
+    cmp bh, FAT_HEADER(loaded_fat)
     je short .current_fat
     movzx eax, bh
     call _load_fat
@@ -23,12 +23,12 @@ _load_entry:
     movzx eax, bl
     shl bx, 1
     mov bx, [fs:fat_buffer + bx]
-    movzx cx, BYTE fat_header(sectors_per_cluster)
+    movzx cx, BYTE FAT_HEADER(sectors_per_cluster)
     mov [fs:si + DAP.sectors_count], cx
     dec al
     dec al
     mul cl
-    add eax, fat_header(lba_data)
+    add eax, FAT_HEADER(lba_data)
     mov [fs:si + DAP.start_lba_low], eax
     pop ax
     pop cx

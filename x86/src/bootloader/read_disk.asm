@@ -9,7 +9,7 @@
 %include "error.asm"
 [BITS 16]
 
-; IN: DS:SI = DAP address, DL = Drive number
+; IN: FS:SI = DAP address, DL = Drive number
 ; OUT: Void
 ; USES: AX
 _read_disk:

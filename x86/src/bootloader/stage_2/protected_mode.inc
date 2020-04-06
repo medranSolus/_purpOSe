@@ -6,10 +6,9 @@
 ;
 %ifndef __PROTECTED_MODE_INC__
 %define __PROTECTED_MODE_INC__
-%include "nmi.asm"
 
 ; USES: EAX, DS, ES
-%macro enter_32bit 0
+%macro ENTER_32BIT 0
     cli
     call _disable_nmi
     mov eax, cr0
@@ -24,7 +23,7 @@
 %endmacro
 
 ; USES: EAX, DS, ES
-%macro leave_32bit 0
+%macro LEAVE_32BIT 0
     mov eax, 0x20
     mov ds, eax
     mov es, eax

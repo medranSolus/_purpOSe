@@ -24,10 +24,10 @@ int main(int argc, char* argv[])
         }
         constexpr size_t VBR_SIZE = 0x3C9;
         char* buffer = new char[VBR_SIZE];
-        fin.seekg(3);
-        fin.read(buffer, 8);
-        fout.seekp(0x203);
-        fout.write(buffer, 8);
+        fin.seekg(0);
+        fin.read(buffer, 11);
+        fout.seekp(0x200);
+        fout.write(buffer, 11);
 
         fin.seekg(0x37);
         fin.read(buffer, VBR_SIZE);
